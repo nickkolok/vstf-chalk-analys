@@ -12,15 +12,11 @@ var brightnessMin = process.argv[3] || 128;
 
 Jimp.read(filename).then(function (image) {
     // do stuff with the image
-	var color = tinycolor(Jimp.intToRGBA(image.getPixelColor(2, 2)));
-	console.log(color.getBrightness())
-
-	console.log(analyseImage(image, brightnessMin));
-
-
+	var result = analyseImage(image, brightnessMin);
+	console.log(result);
 }).catch(function (err) {
-	console.log(err);
     // handle an exception
+	console.log(err);
 });
 
 function analyseImage(image, brightnessMin) {
@@ -28,9 +24,7 @@ function analyseImage(image, brightnessMin) {
 	for (var x = 0; x < image.bitmap.width; x++) {
 		var y;
 		for (y = image.bitmap.height - 1; y >= 0; y--) {
-//		for (y = 0; y < image.bitmap.height; y++) {
 			var brightness = tinycolor(Jimp.intToRGBA(image.getPixelColor(x, y))).getBrightness();
-			//console.log(brightness);
 			if(brightness < brightnessMin) {
 				break;
 			}
