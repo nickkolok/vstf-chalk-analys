@@ -16,6 +16,7 @@ Jimp.read(filename).then(function (image) {
 	var result = analyseImage(image, brightnessMin);
 	console.log(result);
 	exportResult(filename, brightnessMin, result);
+	markEnds(filename, image, result);
 }).catch(function (err) {
     // handle an exception
 	console.log(err);
@@ -42,4 +43,16 @@ function exportResult(filename, brightnessMin, result) {
 		"results/" + filename.split("/").reverse()[0] + "__" + brightnessMin + ".dat.txt",
 		result.join("\n")+"\n"
 	);
+}
+
+function markEnds(filename, image, result) {
+	var marked = image.clone();
+	for (var i = 0; i < result.length; i++) {
+		image.setPixelColor(0xff0000ff, i, image.bitmap.height - result[i] - 1);
+	}
+	var markedname =
+		"results/" + filename.split("/").reverse()[0] + "__" + brightnessMin +
+		"__marked." +
+		image.getExtension();
+	image.write(markedname)
 }
