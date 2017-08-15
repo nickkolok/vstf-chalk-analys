@@ -9,9 +9,19 @@ Jimp.read(filename).then(function (image) {
 	var color = tinycolor(Jimp.intToRGBA(image.getPixelColor(2, 2)));
 	console.log(color.getBrightness())
 
-	var results = [];
 
 	var brightnessMin = 96;
+
+	console.log(analyseImage(image, brightnessMin));
+
+
+}).catch(function (err) {
+	console.log(err);
+    // handle an exception
+});
+
+function analyseImage(image, brightnessMin) {
+	var results = [];
 	for (var x = 0; x < image.bitmap.width; x++) {
 		var y;
 		for (y = image.bitmap.height - 1; y >= 0; y--) {
@@ -24,14 +34,6 @@ Jimp.read(filename).then(function (image) {
 		}
 		results[x] = image.bitmap.height - (y + 1);
 	}
-
-	console.log(results);
-
-
-}).catch(function (err) {
-	console.log(err);
-    // handle an exception
-});
-
-
+	return results;
+}
 
