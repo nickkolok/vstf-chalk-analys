@@ -1,5 +1,6 @@
 var Jimp = require("jimp");
 var tinycolor = require("tinycolor2");
+var fs = require("fs");
 
 var defaultFilename =
 	"./images/test3-1.png";
@@ -14,6 +15,7 @@ Jimp.read(filename).then(function (image) {
     // do stuff with the image
 	var result = analyseImage(image, brightnessMin);
 	console.log(result);
+	exportResult(filename, brightnessMin, result);
 }).catch(function (err) {
     // handle an exception
 	console.log(err);
@@ -34,3 +36,10 @@ function analyseImage(image, brightnessMin) {
 	return results;
 }
 
+function exportResult(filename, brightnessMin, result) {
+	//TODO: mkdirp
+	fs.writeFileSync(
+		"results/" + filename.split("/").reverse()[0] + "__" + brightnessMin + ".dat.txt",
+		result.join("\n")+"\n"
+	);
+}
