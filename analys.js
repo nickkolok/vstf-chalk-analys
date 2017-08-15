@@ -1,16 +1,19 @@
 var Jimp = require("jimp");
 var tinycolor = require("tinycolor2");
 
-//var filename = "./images/test3-1.png";
-var filename = "./images/ex1-up1.png"
+var defaultFilename =
+	"./images/test3-1.png";
+	//"./images/ex1-up1.png";
+
+var filename = process.argv[2] || defaultFilename;
+
+var brightnessMin = process.argv[3] || 128;
+
 
 Jimp.read(filename).then(function (image) {
     // do stuff with the image
 	var color = tinycolor(Jimp.intToRGBA(image.getPixelColor(2, 2)));
 	console.log(color.getBrightness())
-
-
-	var brightnessMin = 96;
 
 	console.log(analyseImage(image, brightnessMin));
 
