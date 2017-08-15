@@ -1,0 +1,25 @@
+{
+  "name": "vstf-chalk-analys",
+  "version": "1.0.0",
+  "description": "",
+  "main": "analys.js",
+  "dependencies": {
+    "jimp": "^0.2.28",
+    "mkdirp": "^0.5.1",
+    "tinycolor2": "^1.4.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nickkolok/vstf-chalk-analys.git"
+  },
+  "author": "Nikolay Avdeev <nickkolok@mail.ru>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/nickkolok/vstf-chalk-analys/issues"
+  },
+  "homepage": "https://github.com/nickkolok/vstf-chalk-analys#readme"
+}
