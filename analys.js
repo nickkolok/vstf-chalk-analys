@@ -15,10 +15,20 @@ var brightnessMin = process.argv[3] || 128;
 
 Jimp.read(filename).then(function (image) {
     // do stuff with the image
+
+	// Анализ по заданным параметрам
 	var result = analyseImage(image, brightnessMin);
 	console.log(result);
 	exportResult(filename, brightnessMin, result);
 	markEnds(filename, image, result);
+
+	//Анализ по средней яркости
+	brightnessMin = image.getAvgBrightness(0, 0, image.bitmap.width, image.bitmap.height);
+	console.log("Средняя яркость изображения: " + brightnessMin);
+	result = analyseImage(image, brightnessMin);
+	exportResult(filename, brightnessMin, result);
+	markEnds(filename, image, result);
+
 }).catch(function (err) {
     // handle an exception
 	console.log(err);
