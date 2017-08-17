@@ -1,4 +1,5 @@
 var Jimp = require("jimp");
+require("./jimp-plugin.js")(Jimp);
 var tinycolor = require("tinycolor2");
 var fs = require("fs");
 var mkdirp = require('mkdirp');
@@ -28,7 +29,7 @@ function analyseImage(image, brightnessMin) {
 	for (var x = 0; x < image.bitmap.width; x++) {
 		var y;
 		for (y = image.bitmap.height - 1; y >= 0; y--) {
-			var brightness = tinycolor(Jimp.intToRGBA(image.getPixelColor(x, y))).getBrightness();
+			var brightness = image.getPixelTinycolor(x, y).getBrightness();
 			if(brightness < brightnessMin) {
 				break;
 			}
