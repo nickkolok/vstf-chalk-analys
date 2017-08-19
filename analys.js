@@ -16,9 +16,19 @@ var brightnessMin = process.argv[3] || 128;
 Jimp.read(filename).then(function (image) {
     // do stuff with the image
 
+/*
+	console.log(image.getPixelTinycolor(0,0).toRgbString());
+	console.log(image.getPixelTinycolor(1,1).toRgbString());
+	console.log(image.getInterpixelTinycolor(0,0).toRgbString());
+	console.log(image.getInterpixelTinycolor(1,1).toRgbString());
+	console.log(image.getInterpixelTinycolor(0.5,0.5).toRgbString());
+	console.log(image.getInterpixelTinycolor(0,0.5).toRgbString());
+	console.log(image.getInterpixelTinycolor(0.5,0).toRgbString());
+	console.log(image.getInterpixelTinycolor(0.3,0.7).toRgbString());
+*/
 	// Анализ по заданным параметрам
 	var result = analyseImage(image, brightnessMin);
-	console.log(result);
+//	console.log(result);
 	exportResult(filename, brightnessMin, result);
 	markEnds(filename, image, result);
 

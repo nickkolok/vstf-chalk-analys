@@ -27,6 +27,38 @@ Jimp.prototype.getPixelTinycolor = function (x, y, cb) {
     return tc;
 };
 
+
+/**
+ * Returns the Tinycolor value of a rational-coordinated pixel
+ * @param x the x coordinate
+ * @param y the y coordinate
+ * @param (optional) cb a callback for when complete
+ * @returns the index of the pixel or -1 if not found
+*/
+Jimp.prototype.getInterpixelTinycolor = function (x, y, cb) {
+    var LU = Jimp.intToRGBA(this.getPixelColor(Math.floor(x), Math.floor(y)));
+    var RU = Jimp.intToRGBA(this.getPixelColor(Math. ceil(x), Math.floor(y)));
+    var LB = Jimp.intToRGBA(this.getPixelColor(Math.floor(x), Math. ceil(y)));
+    var RB = Jimp.intToRGBA(this.getPixelColor(Math. ceil(x), Math. ceil(y)));
+
+	var result = {};
+	for (var cmp in LU) {
+		result[cmp] = (0
+			+ LU[cmp] * (Math.ceil(x    ) - x) * (Math.ceil(y    ) - y)
+			- RU[cmp] * (Math.ceil(x - 1) - x) * (Math.ceil(y    ) - y)
+			- LB[cmp] * (Math.ceil(x    ) - x) * (Math.ceil(y - 1) - y)
+			+ RB[cmp] * (Math.ceil(x - 1) - x) * (Math.ceil(y - 1) - y)
+		);
+	}
+
+    var tc = TinyColor(result);
+
+    if (isNodePattern(cb)) {
+		return cb.call(this, null, tc);
+	}
+    return tc;
+};
+
 /**
  * Returns the Number value of average brightness of a region
  * @param x the x coordinate
