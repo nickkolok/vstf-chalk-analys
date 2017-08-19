@@ -55,6 +55,40 @@ Jimp.prototype.getAvgBrightness = function (x, y, w, h) {
 };
 
 
+/**
+ * Finds mass center by brightness
+ * @param x the x coordinate
+ * @param y the y coordinate
+ * @param w the width
+ * @param h height
+ * @returns object with coordinates
+*/
+Jimp.prototype.getCenterOfBrightness = function (x, y, w, h) {
+    x = Math.max(x, 0);
+    y = Math.max(y, 0);
+	if (x + w > this.bitmap.width) {
+		w = this.bitmap.width - x;
+	}//TODO: maybe +1
+	if (y + h > this.bitmap.height) {
+		h = this.bitmap.height - y;
+	}//TODO: maybe +1
+
+
+	var xsum = 0, ysum = 0, msum = 0;
+    this.scan(x, y, w, h, function(curx, cury){
+		var curbr = this.getPixelTinycolor(curx, cury).getBrightness();
+		msum += curbr;
+		xsum += curbr * curx;
+		ysum += curbr * cury;
+	});
+
+	return {
+		x: xsum / msum,
+		y: ysum / msum,
+	};
+};
+
+
 
 
 

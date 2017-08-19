@@ -29,6 +29,12 @@ Jimp.read(filename).then(function (image) {
 	exportResult(filename, brightnessMin, result);
 	markEnds(filename, image, result);
 
+	//Поиск центров вертикальной яркости - уже для двухсторонних. Ну вот так всё в кучу :(
+	markBrightnessCenters(filename, image, "");
+	var gaussianBlured = image.clone();
+	gaussianBlured.gaussian(8);
+	markBrightnessCenters(filename, gaussianBlured, "gaussian-blured");
+
 }).catch(function (err) {
     // handle an exception
 	console.log(err);
@@ -60,11 +66,24 @@ function exportResult(filename, brightnessMin, result) {
 function markEnds(filename, image, result) {
 	var marked = image.clone();
 	for (var i = 0; i < result.length; i++) {
-		image.setPixelColor(0xff0000ff, i, image.bitmap.height - result[i] - 1);
+		marked.setPixelColor(0xff0000ff, i, marked.bitmap.height - result[i] - 1);
 	}
 	var markedname =
 		"results/" + filename.split("/").reverse()[0] + "__" + brightnessMin +
 		"__marked." +
-		image.getExtension();
-	image.write(markedname)
+		"png";
+	marked.write(markedname)
+}
+
+function markBrightnessCenters(filename, image, postfix) {
+	var marked = image.clone();
+	for (var i = 0; i < marked.bitmap.width; i++) {
+		var coord = marked.getCenterOfBrightness(i, 0, 1, marked.bitmap.height);
+		marked.setPixelColor(0x00ff00ff, coord.x, coord.y);
+	}
+	var markedname =
+		"results/" + filename.split("/").reverse()[0] +
+		"__marked_bc__" + postfix + "." +
+		"png";
+	marked.write(markedname)
 }
