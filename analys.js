@@ -40,10 +40,14 @@ Jimp.read(filename).then(function (image) {
 	markEnds(filename, image, result);
 
 	//Поиск центров вертикальной яркости - уже для двухсторонних. Ну вот так всё в кучу :(
+/*
 	markBrightnessCenters(filename, image, "");
+
 	var gaussianBlured = image.clone();
 	gaussianBlured.gaussian(8);
-	markBrightnessCenters(filename, gaussianBlured, "gaussian-blured");
+*/
+	markBrightnessCenters(filename, /*gaussianBlured*/image, "gaussian-blured");
+
 
 }).catch(function (err) {
     // handle an exception
@@ -85,12 +89,41 @@ function markEnds(filename, image, result) {
 	marked.write(markedname)
 }
 
+
+function getBrightnessCenters(image) {
+	var centers = [];
+	for (var i = 0; i < image.bitmap.width; i++) {
+		centers[i] = image.getCenterOfBrightness(i, 0, 1, image.bitmap.height).y;
+	}
+	return centers;
+}
+
+function getGaussBrightnessCenters(image, size) {
+	var gauss = image.clone();
+	gauss.gaussian(size || 8);
+	return getBrightnessCenters(gauss);
+}
+
+
+function markArray(image, array, intcolor) {
+	//TODO: таки setPixelTinycolor()
+	var marked = image.clone();
+	for (var i = 0; i < marked.bitmap.width; i++) {
+		marked.setPixelColor(intcolor, i, array[i]);
+	}
+	return marked;
+}
+
 function markBrightnessCenters(filename, image, postfix) {
+
+/*
 	var marked = image.clone();
 	for (var i = 0; i < marked.bitmap.width; i++) {
 		var coord = marked.getCenterOfBrightness(i, 0, 1, marked.bitmap.height);
 		marked.setPixelColor(0x00ff00ff, coord.x, coord.y);
 	}
+*/
+	var marked = markArray(image,getGaussBrightnessCenters(image, 8),0x00ff00ff);
 	var markedname =
 		"results/" + filename.split("/").reverse()[0] +
 		"__marked_bc__" + postfix + "." +
