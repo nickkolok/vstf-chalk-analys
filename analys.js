@@ -26,6 +26,7 @@ Jimp.read(filename).then(function (image) {
 	console.log(image.getInterpixelTinycolor(0.5,0).toRgbString());
 	console.log(image.getInterpixelTinycolor(0.3,0.7).toRgbString());
 */
+/*
 	// Анализ по заданным параметрам
 	var result = analyseImage(image, brightnessMin);
 //	console.log(result);
@@ -38,15 +39,34 @@ Jimp.read(filename).then(function (image) {
 	result = analyseImage(image, brightnessMin);
 	exportResult(filename, brightnessMin, result);
 	markEnds(filename, image, result);
-
+*/
 	//Поиск центров вертикальной яркости - уже для двухсторонних. Ну вот так всё в кучу :(
 /*
 	markBrightnessCenters(filename, image, "");
 
 	var gaussianBlured = image.clone();
 	gaussianBlured.gaussian(8);
+	markBrightnessCenters(filename, gaussianBlured, "gaussian-blured");
 */
-	markBrightnessCenters(filename, /*gaussianBlured*/image, "gaussian-blured");
+
+// Ищем осевую линию
+	var centers = getGaussBrightnessCenters(image, 8);
+	var normalsU = [], normalsD = [];
+	for (var i = 0; i < image.bitmap.width; i++) {
+		normalsU.push([0, -0.2]);
+		normalsD.push([0,  0.2]);
+	}
+
+	var peakEndsU = findPeakEnds(image, centers, normalsU, brightnessMin);
+	var peakEndsD = findPeakEnds(image, centers, normalsD, brightnessMin);
+	var peaked = markBiArray(image, peakEndsU, 0xff0000ff);
+	peaked = markBiArray(peaked, peakEndsD, 0x0000ffff);
+	var peakedname =
+		"results/" + filename.split("/").reverse()[0] +
+		"__peaked_" + brightnessMin + "." +
+		"png";
+	peaked.write(peakedname)
+//	markBrightnessCenters(filename, /*gaussianBlured*/image, "gaussian-blured");
 
 
 }).catch(function (err) {
@@ -89,7 +109,6 @@ function markEnds(filename, image, result) {
 	marked.write(markedname)
 }
 
-
 function getBrightnessCenters(image) {
 	var centers = [];
 	for (var i = 0; i < image.bitmap.width; i++) {
@@ -104,12 +123,20 @@ function getGaussBrightnessCenters(image, size) {
 	return getBrightnessCenters(gauss);
 }
 
-
 function markArray(image, array, intcolor) {
 	//TODO: таки setPixelTinycolor()
 	var marked = image.clone();
 	for (var i = 0; i < marked.bitmap.width; i++) {
 		marked.setPixelColor(intcolor, i, array[i]);
+	}
+	return marked;
+}
+
+function markBiArray(image, array, intcolor) {
+	//TODO: таки setPixelTinycolor()
+	var marked = image.clone();
+	for (var i = 0; i < array.length; i++) {
+		marked.setPixelColor(intcolor, array[i][0], array[i][1]);
 	}
 	return marked;
 }
@@ -129,4 +156,18 @@ function markBrightnessCenters(filename, image, postfix) {
 		"__marked_bc__" + postfix + "." +
 		"png";
 	marked.write(markedname)
+}
+
+function findPeakEnds(image, points, normals, brightnessMin) {
+	var ends = [];
+	for (var i = 0; i < image.bitmap.width; i++) {
+		curx = i;
+		cury = points[i];
+		do {
+			curx += normals[i][0];
+			cury += normals[i][1];
+		} while(image.getInterpixelTinycolor(curx, cury).getBrightness() >= brightnessMin);
+		ends.push([curx,cury]);
+	}
+	return ends;
 }
