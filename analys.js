@@ -6,6 +6,8 @@ var mkdirp = require('mkdirp');
 
 var lagrange = require("./make-lagrange-polynom.js");
 
+var linearRegression = require('everpolate').linearRegression;
+
 var defaultFilename =
 	"./images/test3-1.png";
 	//"./images/ex1-up1.png";
@@ -54,11 +56,17 @@ Jimp.read(filename).then(function (image) {
 // Ищем осевую линию
 	var centers = getGaussBrightnessCenters(image, 8);
 	var normalsU = [], normalsD = [];
+
+/*
 	for (var i = 0; i < image.bitmap.width; i++) {
 		normalsU.push([0,  0.2]);
 		normalsD.push([0, -0.2]);
 	}
+*/
 
+	makeNormals(centers, normalsU, normalsD);
+//	console.log(normalsU);
+//	console.log(normalsD);
 	var peakEndsU = findPeakEnds(image, centers, normalsU, brightnessMin);
 	var peakEndsD = findPeakEnds(image, centers, normalsD, brightnessMin);
 	var peaked = markBiArray(image, peakEndsU, 0xff0000ff);
@@ -85,6 +93,38 @@ Jimp.read(filename).then(function (image) {
     // handle an exception
 	console.log(err);
 });
+
+
+function normalize(arr, len) {
+	var norm = Math.sqrt(arr[0]*arr[0]+arr[1]*arr[1]);
+	for(var i = 0; i < 2; i++){
+		arr[i]*=len/(norm || 1);
+	}
+	return arr;
+}
+
+function makeNormals(centers, normalsU, normalsD){
+	var delta = 10; //TODO: параметр!
+	var step = 1;//0.2; //TODO: параметр!
+	for(var i = 0; i < centers.length; i++) {
+		var xs = [], ys = [];
+		for(var j = Math.max(0, i - delta); j < Math.min(centers.length, i + delta); j++) {
+			xs.push(j);
+			ys.push(centers[j]);
+		}
+//		console.log(xs,ys);
+		var k = linearRegression(xs, ys).slope;
+		if (k < 0) {
+			normalsU[i]=[ k,  1];
+			normalsD[i]=[-k, -1];
+		} else {//k >= 0
+			normalsU[i]=[-k,  1];
+			normalsD[i]=[ k, -1];
+		}
+		normalize(normalsU[i], step);
+		normalize(normalsD[i], step);
+	}
+}
 
 function analyseImage(image, brightnessMin) {
 	var results = [];
