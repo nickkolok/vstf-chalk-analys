@@ -65,7 +65,16 @@ Jimp.read(filename).then(function (image) {
 		"results/" + filename.split("/").reverse()[0] +
 		"__peaked_" + brightnessMin + "." +
 		"png";
-	peaked.write(peakedname)
+	peaked.write(peakedname);
+	fs.writeFileSync(
+		"results/" + filename.split("/").reverse()[0] + "__up_"+ brightnessMin + ".dat.txt",
+		peakEndsU.map((e)=>e[2]).join("\n")+"\n"
+	)
+	fs.writeFileSync(
+		"results/" + filename.split("/").reverse()[0] + "__down_"+ brightnessMin + ".dat.txt",
+		peakEndsD.map((e)=>e[2]).join("\n")+"\n"
+	)
+
 //	markBrightnessCenters(filename, /*gaussianBlured*/image, "gaussian-blured");
 
 
@@ -167,7 +176,11 @@ function findPeakEnds(image, points, normals, brightnessMin) {
 			curx += normals[i][0];
 			cury += normals[i][1];
 		} while(image.getInterpixelTinycolor(curx, cury).getBrightness() >= brightnessMin);
-		ends.push([curx,cury]);
+		ends.push([
+			curx,
+			cury,
+			Math.sqrt(Math.pow(curx - i, 2) + Math.pow(cury - points[i], 2))
+		]);
 	}
 	return ends;
 }
