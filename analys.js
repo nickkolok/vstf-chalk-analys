@@ -61,7 +61,7 @@ Jimp.read(filename).then(function (image) {
 function normalize(arr, len) {
 	var norm = Math.sqrt(arr[0]*arr[0]+arr[1]*arr[1]);
 	for(var i = 0; i < 2; i++){
-		arr[i]*=len/(norm || 1);
+		arr[i]*=(len || 1)/norm;
 	}
 	return arr;
 }
