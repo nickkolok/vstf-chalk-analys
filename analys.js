@@ -4,6 +4,8 @@ var tinycolor = require("tinycolor2");
 var fs = require("fs");
 var mkdirp = require('mkdirp');
 
+var lagrange = require("./make-lagrange-polynom.js");
+
 var defaultFilename =
 	"./images/test3-1.png";
 	//"./images/ex1-up1.png";
