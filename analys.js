@@ -18,22 +18,8 @@ var brightnessMin = process.argv[3] || 128;
 Jimp.read(filename).then(function (image) {
     // do stuff with the image
 
-/*
-	// Анализ по заданным параметрам
-	var result = analyseImage(image, brightnessMin);
-//	console.log(result);
-	exportResult(filename, brightnessMin, result);
-	markEnds(filename, image, result);
 
-	//Анализ по средней яркости
-	brightnessMin = image.getAvgBrightness(0, 0, image.bitmap.width, image.bitmap.height);
-	console.log("Средняя яркость изображения: " + brightnessMin);
-	result = analyseImage(image, brightnessMin);
-	exportResult(filename, brightnessMin, result);
-	markEnds(filename, image, result);
-*/
-
-	//Поиск центров вертикальной яркости - уже для двухсторонних. Ну вот так всё в кучу :(
+	// Поиск центров вертикальной яркости - уже для двухсторонних. Ну вот так всё в кучу :(
 	// Ищем осевую линию
 	var centers = getGaussBrightnessCenters(image, 8);
 	var normalsU = [], normalsD = [];
@@ -101,28 +87,6 @@ function makeNormals(centers, normalsU, normalsD){
 	}
 }
 
-function analyseImage(image, brightnessMin) {
-	var results = [];
-	for (var x = 0; x < image.bitmap.width; x++) {
-		var y;
-		for (y = image.bitmap.height - 1; y >= 0; y--) {
-			var brightness = image.getPixelTinycolor(x, y).getBrightness();
-			if(brightness < brightnessMin) {
-				break;
-			}
-		}
-		results[x] = image.bitmap.height - (y + 1);
-	}
-	return results;
-}
-
-function exportResult(filename, brightnessMin, result) {
-	mkdirp.sync("results");
-	fs.writeFileSync(
-		"results/" + filename.split("/").reverse()[0] + "__" + brightnessMin + ".dat.txt",
-		result.join("\n")+"\n"
-	);
-}
 
 function markEnds(filename, image, result) {
 	var marked = image.clone();
