@@ -19,8 +19,7 @@ Jimp.read(filename).then(function (image) {
     // do stuff with the image
 
 
-	// Поиск центров вертикальной яркости - уже для двухсторонних. Ну вот так всё в кучу :(
-	// Ищем осевую линию
+	// Поиск центров вертикальной яркости для двухсторонних
 	var centers = getGaussBrightnessCenters(image, 8);
 	var normalsU = [], normalsD = [];
 
@@ -89,18 +88,6 @@ function makeNormals(centers, normalsU, normalsD){
 	}
 }
 
-
-function markEnds(filename, image, result) {
-	var marked = image.clone();
-	for (var i = 0; i < result.length; i++) {
-		marked.setPixelColor(0xff0000ff, i, marked.bitmap.height - result[i] - 1);
-	}
-	var markedname =
-		"results/" + filename.split("/").reverse()[0] + "__" + brightnessMin +
-		"__marked." +
-		"png";
-	marked.write(markedname)
-}
 
 function getBrightnessCenters(image) {
 	var centers = [];
