@@ -55,8 +55,8 @@ Jimp.read(filename).then(function (image) {
 	var centers = getGaussBrightnessCenters(image, 8);
 	var normalsU = [], normalsD = [];
 	for (var i = 0; i < image.bitmap.width; i++) {
-		normalsU.push([0, -0.2]);
-		normalsD.push([0,  0.2]);
+		normalsU.push([0,  0.2]);
+		normalsD.push([0, -0.2]);
 	}
 
 	var peakEndsU = findPeakEnds(image, centers, normalsU, brightnessMin);
