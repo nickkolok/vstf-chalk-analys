@@ -13,7 +13,7 @@ var defaultFilename =
 var filename = process.argv[2] || defaultFilename;
 
 var brightnessMin = process.argv[3] || 128;
-
+var countNormals = true;
 
 Jimp.read(filename).then(function (image) {
     // do stuff with the image
@@ -24,14 +24,16 @@ Jimp.read(filename).then(function (image) {
 	var centers = getGaussBrightnessCenters(image, 8);
 	var normalsU = [], normalsD = [];
 
-/*
-	for (var i = 0; i < image.bitmap.width; i++) {
-		normalsU.push([0,  0.2]);
-		normalsD.push([0, -0.2]);
+	if (countNormals) {
+		// Считаем косые нормали
+		makeNormals(centers, normalsU, normalsD);
+	} else {
+		// Обойдёмся прямыми
+		//TODO: шаг!!!
+		normalsU = (new Array(image.bitmap.width)).fill([0,  0.2]);
+		normalsD = (new Array(image.bitmap.width)).fill([0, -0.2]);
 	}
-*/
 
-	makeNormals(centers, normalsU, normalsD);
 	var peakEndsU = findPeakEnds(image, centers, normalsU, brightnessMin);
 	var peakEndsD = findPeakEnds(image, centers, normalsD, brightnessMin);
 	var peaked = markBiArray(image, peakEndsU, 0xff0000ff);
