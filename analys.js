@@ -173,12 +173,20 @@ function markBrightnessCenters(filename, image, postfix) {
 function findPeakEnds(image, points, normals, brightnessMin) {
 	var ends = [];
 	for (var i = 0; i < image.bitmap.width; i++) {
-		curx = i;
-		cury = points[i];
+		var curx = i;
+		var cury = points[i];
+		var len = 0;
 		do {
 			curx += normals[i][0];
 			cury += normals[i][1];
-		} while(image.getInterpixelTinycolor(curx, cury).getBrightness() >= brightnessMin);
+			len++;
+		} while(
+			image.getInterpixelTinycolor(curx, cury).getBrightness() >= brightnessMin
+		&&
+			curx >=0 && curx <=image.bitmap.width
+		&&
+			cury >=0 && cury <=image.bitmap.height
+		);
 		ends.push([
 			curx,
 			cury,
