@@ -4,8 +4,6 @@ var tinycolor = require("tinycolor2");
 var fs = require("fs");
 var mkdirp = require('mkdirp');
 
-var lagrange = require("./make-lagrange-polynom.js");
-
 var linearRegression = require('everpolate').linearRegression;
 
 var defaultFilename =
@@ -21,16 +19,6 @@ Jimp.read(filename).then(function (image) {
     // do stuff with the image
 
 /*
-	console.log(image.getPixelTinycolor(0,0).toRgbString());
-	console.log(image.getPixelTinycolor(1,1).toRgbString());
-	console.log(image.getInterpixelTinycolor(0,0).toRgbString());
-	console.log(image.getInterpixelTinycolor(1,1).toRgbString());
-	console.log(image.getInterpixelTinycolor(0.5,0.5).toRgbString());
-	console.log(image.getInterpixelTinycolor(0,0.5).toRgbString());
-	console.log(image.getInterpixelTinycolor(0.5,0).toRgbString());
-	console.log(image.getInterpixelTinycolor(0.3,0.7).toRgbString());
-*/
-/*
 	// Анализ по заданным параметрам
 	var result = analyseImage(image, brightnessMin);
 //	console.log(result);
@@ -44,16 +32,9 @@ Jimp.read(filename).then(function (image) {
 	exportResult(filename, brightnessMin, result);
 	markEnds(filename, image, result);
 */
+
 	//Поиск центров вертикальной яркости - уже для двухсторонних. Ну вот так всё в кучу :(
-/*
-	markBrightnessCenters(filename, image, "");
-
-	var gaussianBlured = image.clone();
-	gaussianBlured.gaussian(8);
-	markBrightnessCenters(filename, gaussianBlured, "gaussian-blured");
-*/
-
-// Ищем осевую линию
+	// Ищем осевую линию
 	var centers = getGaussBrightnessCenters(image, 8);
 	var normalsU = [], normalsD = [];
 
@@ -65,8 +46,6 @@ Jimp.read(filename).then(function (image) {
 */
 
 	makeNormals(centers, normalsU, normalsD);
-//	console.log(normalsU);
-//	console.log(normalsD);
 	var peakEndsU = findPeakEnds(image, centers, normalsU, brightnessMin);
 	var peakEndsD = findPeakEnds(image, centers, normalsD, brightnessMin);
 	var peaked = markBiArray(image, peakEndsU, 0xff0000ff);
@@ -85,9 +64,6 @@ Jimp.read(filename).then(function (image) {
 		"results/" + filename.split("/").reverse()[0] + "__down_"+ brightnessMin + ".dat.txt",
 		peakEndsD.map((e)=>e[2]).join("\n")+"\n"
 	)
-
-//	markBrightnessCenters(filename, /*gaussianBlured*/image, "gaussian-blured");
-
 
 }).catch(function (err) {
     // handle an exception
@@ -112,7 +88,6 @@ function makeNormals(centers, normalsU, normalsD){
 			xs.push(j);
 			ys.push(centers[j]);
 		}
-//		console.log(xs,ys);
 		var k = linearRegression(xs, ys).slope;
 		if (k < 0) {
 			normalsU[i]=[ k,  1];
@@ -195,13 +170,6 @@ function markBiArray(image, array, intcolor) {
 
 function markBrightnessCenters(filename, image, postfix) {
 
-/*
-	var marked = image.clone();
-	for (var i = 0; i < marked.bitmap.width; i++) {
-		var coord = marked.getCenterOfBrightness(i, 0, 1, marked.bitmap.height);
-		marked.setPixelColor(0x00ff00ff, coord.x, coord.y);
-	}
-*/
 	var marked = markArray(image,getGaussBrightnessCenters(image, 8),0x00ff00ff);
 	var markedname =
 		"results/" + filename.split("/").reverse()[0] +

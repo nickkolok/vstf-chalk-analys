@@ -59,6 +59,20 @@ Jimp.prototype.getInterpixelTinycolor = function (x, y, cb) {
     return tc;
 };
 
+//	"./images/test3-1.png";
+/*
+	console.log(image.getPixelTinycolor(0,0).toRgbString());
+	console.log(image.getPixelTinycolor(1,1).toRgbString());
+	console.log(image.getInterpixelTinycolor(0,0).toRgbString());
+	console.log(image.getInterpixelTinycolor(1,1).toRgbString());
+	console.log(image.getInterpixelTinycolor(0.5,0.5).toRgbString());
+	console.log(image.getInterpixelTinycolor(0,0.5).toRgbString());
+	console.log(image.getInterpixelTinycolor(0.5,0).toRgbString());
+	console.log(image.getInterpixelTinycolor(0.3,0.7).toRgbString());
+*/
+
+
+
 /**
  * Returns the Number value of average brightness of a region
  * @param x the x coordinate
