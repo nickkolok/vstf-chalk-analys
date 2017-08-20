@@ -63,6 +63,7 @@ Jimp.read(filename).then(function (image) {
 	var peakEndsD = findPeakEnds(image, centers, normalsD, brightnessMin);
 	var peaked = markBiArray(image, peakEndsU, 0xff0000ff);
 	peaked = markBiArray(peaked, peakEndsD, 0x0000ffff);
+	peaked = markArray(peaked, centers, 0x00ff00ff);
 	var peakedname =
 		"results/" + filename.split("/").reverse()[0] +
 		"__peaked_" + brightnessMin + "." +
