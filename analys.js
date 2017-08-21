@@ -20,7 +20,12 @@ Jimp.read(filename).then(function (image) {
 
 
 	// Поиск центров вертикальной яркости для двухсторонних
+
+	var timeBeforeGauss = Date.now();
 	var centers = getGaussBrightnessCenters(image, conf.gaussRadius);
+	console.log("Гауссово размытие: " + (Date.now() - timeBeforeGauss)/1000 + "с");
+
+	// Построение нормалей
 	var normalsU = [], normalsD = [];
 
 	if (countNormals) {
@@ -32,14 +37,23 @@ Jimp.read(filename).then(function (image) {
 		normalsD = (new Array(image.bitmap.width)).fill([0, -conf.step]);
 	}
 
+	var timeBeforePeaksU = Date.now();
 	var peakEndsU = findPeakEnds(image, centers, normalsU, brightnessMin, conf);
+	console.log("Поиск верхних пиков: " + (Date.now() - timeBeforePeaksU)/1000 + "с");
+	var timeBeforePeaksD = Date.now();
 	var peakEndsD = findPeakEnds(image, centers, normalsD, brightnessMin, conf);
+	console.log("Поиск  нижних пиков: " + (Date.now() - timeBeforePeaksD)/1000 + "с");
+
+
 	var peaked = markBiArray(image, peakEndsU, 0xff0000ff);
 	peaked = markBiArray(peaked, peakEndsD, 0x0000ffff);
 	peaked = markArray(peaked, centers, 0x00ff00ff);
 	writeImage(peaked, conf, "peaked_" + brightnessMin);
 	writeDataArray(peakEndsU.map((e)=>e[2]), conf,   "up_"+ brightnessMin);
 	writeDataArray(peakEndsD.map((e)=>e[2]), conf, "down_"+ brightnessMin);
+
+	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + "с");
+
 }).catch(function (err) {
     // handle an exception
 	console.log(err);
