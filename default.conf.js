@@ -4,4 +4,5 @@ module.exports = {
 	step: 1,
 	brightnessMin: 120,
 	countNormals: true,
+	delta: 10,
 }

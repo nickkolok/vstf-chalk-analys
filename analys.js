@@ -23,16 +23,15 @@ Jimp.read(filename).then(function (image) {
 
 	if (countNormals) {
 		// Считаем косые нормали
-		makeNormals(centers, normalsU, normalsD);
+		makeNormals(centers, normalsU, normalsD, conf);
 	} else {
 		// Обойдёмся прямыми
-		//TODO: шаг!!!
-		normalsU = (new Array(image.bitmap.width)).fill([0,  0.2]);
-		normalsD = (new Array(image.bitmap.width)).fill([0, -0.2]);
+		normalsU = (new Array(image.bitmap.width)).fill([0,  conf.step]);
+		normalsD = (new Array(image.bitmap.width)).fill([0, -conf.step]);
 	}
 
-	var peakEndsU = findPeakEnds(image, centers, normalsU, brightnessMin);
-	var peakEndsD = findPeakEnds(image, centers, normalsD, brightnessMin);
+	var peakEndsU = findPeakEnds(image, centers, normalsU, brightnessMin, conf);
+	var peakEndsD = findPeakEnds(image, centers, normalsD, brightnessMin, conf);
 	var peaked = markBiArray(image, peakEndsU, 0xff0000ff);
 	peaked = markBiArray(peaked, peakEndsD, 0x0000ffff);
 	peaked = markArray(peaked, centers, 0x00ff00ff);
@@ -64,9 +63,9 @@ function normalize(arr, len) {
 	return arr;
 }
 
-function makeNormals(centers, normalsU, normalsD){
-	var delta = 10; //TODO: параметр!
-	var step = 1;//0.2; //TODO: параметр!
+function makeNormals(centers, normalsU, normalsD, par){
+	var delta = (par.delta || 10);
+	var step = (par.step || 1);
 	for(var i = 0; i < centers.length; i++) {
 		var xs = [], ys = [];
 		for(var j = Math.max(0, i - delta); j < Math.min(centers.length, i + delta); j++) {
@@ -129,7 +128,7 @@ function markBrightnessCenters(filename, image, postfix) {
 	marked.write(markedname)
 }
 
-function findPeakEnds(image, points, normals, brightnessMin) {
+function findPeakEnds(image, points, normals, brightnessMin, par) {
 	var ends = [];
 	for (var i = 0; i < image.bitmap.width; i++) {
 		var curx = i;
@@ -149,7 +148,7 @@ function findPeakEnds(image, points, normals, brightnessMin) {
 		ends.push([
 			curx,
 			cury,
-			Math.sqrt(Math.pow(curx - i, 2) + Math.pow(cury - points[i], 2))
+			len * par.step,
 		]);
 	}
 	return ends;
