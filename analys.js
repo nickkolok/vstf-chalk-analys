@@ -39,20 +39,20 @@ Jimp.read(filename).then(function (image) {
 	peaked = markArray(peaked, centers, 0x00ff00ff);
 	var peakedname = conf.resultname + "peaked_" + brightnessMin + ".png";
 	peaked.write(peakedname);
-	fs.writeFileSync(
-		conf.resultname + "up_"+ brightnessMin + ".dat.txt",
-		peakEndsU.map((e)=>e[2]).join("\n")+"\n"
-	)
-	fs.writeFileSync(
-		conf.resultname + "down_"+ brightnessMin + ".dat.txt",
-		peakEndsD.map((e)=>e[2]).join("\n")+"\n"
-	)
-
+	writeDataArray(peakEndsU.map((e)=>e[2]), conf,   "up_"+ brightnessMin);
+	writeDataArray(peakEndsD.map((e)=>e[2]), conf, "down_"+ brightnessMin);
 }).catch(function (err) {
     // handle an exception
 	console.log(err);
 });
 
+
+function writeDataArray(arr, par, postfix) {
+	fs.writeFileSync(
+		par.resultname + postfix + ".dat.txt",
+		arr.join("\n")+"\n"
+	);
+}
 
 function normalize(arr, len) {
 	var norm = Math.sqrt(arr[0]*arr[0]+arr[1]*arr[1]);
