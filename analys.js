@@ -13,6 +13,8 @@ var filename = process.argv[2] || conf.filename;
 var brightnessMin = process.argv[3] || conf.brightnessMin;
 var countNormals = conf.countNormals;
 
+conf.resultname = (conf.resultname || ("results/" + filename.split("/").reverse()[0] + "__"));
+
 Jimp.read(filename).then(function (image) {
     // do stuff with the image
 
@@ -35,17 +37,14 @@ Jimp.read(filename).then(function (image) {
 	var peaked = markBiArray(image, peakEndsU, 0xff0000ff);
 	peaked = markBiArray(peaked, peakEndsD, 0x0000ffff);
 	peaked = markArray(peaked, centers, 0x00ff00ff);
-	var peakedname =
-		"results/" + filename.split("/").reverse()[0] +
-		"__peaked_" + brightnessMin + "." +
-		"png";
+	var peakedname = conf.resultname + "peaked_" + brightnessMin + ".png";
 	peaked.write(peakedname);
 	fs.writeFileSync(
-		"results/" + filename.split("/").reverse()[0] + "__up_"+ brightnessMin + ".dat.txt",
+		conf.resultname + "up_"+ brightnessMin + ".dat.txt",
 		peakEndsU.map((e)=>e[2]).join("\n")+"\n"
 	)
 	fs.writeFileSync(
-		"results/" + filename.split("/").reverse()[0] + "__down_"+ brightnessMin + ".dat.txt",
+		conf.resultname + "down_"+ brightnessMin + ".dat.txt",
 		peakEndsD.map((e)=>e[2]).join("\n")+"\n"
 	)
 
@@ -121,10 +120,7 @@ function markBiArray(image, array, intcolor) {
 function markBrightnessCenters(filename, image, postfix) {
 
 	var marked = markArray(image,getGaussBrightnessCenters(image, 8),0x00ff00ff);
-	var markedname =
-		"results/" + filename.split("/").reverse()[0] +
-		"__marked_bc__" + postfix + "." +
-		"png";
+	var markedname = conf.resultname + "marked_bc__" + postfix + ".png";
 	marked.write(markedname)
 }
 
