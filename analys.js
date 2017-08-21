@@ -11,7 +11,7 @@ var conf = require('./default.conf.js');
 
 var filename = process.argv[2] || conf.filename;
 var brightnessMin = process.argv[3] || conf.brightnessMin;
-var countNormals = conf.brightnessMin;
+var countNormals = conf.countNormals;
 
 Jimp.read(filename).then(function (image) {
     // do stuff with the image
