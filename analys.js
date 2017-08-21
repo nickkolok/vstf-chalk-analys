@@ -117,13 +117,6 @@ function markBiArray(image, array, intcolor) {
 	return marked;
 }
 
-function markBrightnessCenters(filename, image, postfix) {
-
-	var marked = markArray(image,getGaussBrightnessCenters(image, 8),0x00ff00ff);
-	var markedname = conf.resultname + "marked_bc__" + postfix + ".png";
-	marked.write(markedname)
-}
-
 function findPeakEnds(image, points, normals, brightnessMin, par) {
 	var ends = [];
 	for (var i = 0; i < image.bitmap.width; i++) {
