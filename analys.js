@@ -1,19 +1,17 @@
 var Jimp = require("jimp");
-require("./jimp-plugin.js")(Jimp);
 var tinycolor = require("tinycolor2");
 var fs = require("fs");
 var mkdirp = require('mkdirp');
-
 var linearRegression = require('everpolate').linearRegression;
 
-var defaultFilename =
-	"./images/test3-1.png";
-	//"./images/ex1-up1.png";
+require("./jimp-plugin.js")(Jimp);
 
-var filename = process.argv[2] || defaultFilename;
+var conf = require('./default.conf.js');
 
-var brightnessMin = process.argv[3] || 128;
-var countNormals = true;
+
+var filename = process.argv[2] || conf.filename;
+var brightnessMin = process.argv[3] || conf.brightnessMin;
+var countNormals = conf.brightnessMin;
 
 Jimp.read(filename).then(function (image) {
     // do stuff with the image
