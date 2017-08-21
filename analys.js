@@ -37,8 +37,7 @@ Jimp.read(filename).then(function (image) {
 	var peaked = markBiArray(image, peakEndsU, 0xff0000ff);
 	peaked = markBiArray(peaked, peakEndsD, 0x0000ffff);
 	peaked = markArray(peaked, centers, 0x00ff00ff);
-	var peakedname = conf.resultname + "peaked_" + brightnessMin + ".png";
-	peaked.write(peakedname);
+	writeImage(peaked, conf, "peaked_" + brightnessMin);
 	writeDataArray(peakEndsU.map((e)=>e[2]), conf,   "up_"+ brightnessMin);
 	writeDataArray(peakEndsD.map((e)=>e[2]), conf, "down_"+ brightnessMin);
 }).catch(function (err) {
@@ -46,6 +45,9 @@ Jimp.read(filename).then(function (image) {
 	console.log(err);
 });
 
+function writeImage(image, par, postfix){
+	image.write(par.resultname + postfix + ".png");
+}
 
 function writeDataArray(arr, par, postfix) {
 	fs.writeFileSync(
