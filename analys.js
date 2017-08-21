@@ -67,10 +67,10 @@ Jimp.read(filename).then(function (image) {
 
 	var timeBeforePeaksU = Date.now();
 	var peakEndsU = findPeakEnds(image, centers, normalsU, brightnessMin, conf);
-	console.log("Поиск верхних пиков: " + (Date.now() - timeBeforePeaksU)/1000 + "с");
+	console.log("Поиск верхних пиков: " + (Date.now() - timeBeforePeaksU)/1000 + " с");
 	var timeBeforePeaksD = Date.now();
 	var peakEndsD = findPeakEnds(image, centers, normalsD, brightnessMin, conf);
-	console.log("Поиск  нижних пиков: " + (Date.now() - timeBeforePeaksD)/1000 + "с");
+	console.log("Поиск  нижних пиков: " + (Date.now() - timeBeforePeaksD)/1000 + " с");
 
 
 	var peaked = markBiArray(image, peakEndsU, 0xff0000ff);
