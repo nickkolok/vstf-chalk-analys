@@ -18,6 +18,7 @@ conf.resultname = (conf.resultname || ("results/" + filename.split("/").reverse(
 Jimp.read(filename).then(function (image) {
     // do stuff with the image
 
+	image.flip(false, true); // Тут ось y направлена вниз, свихнуться можно!
 
 	// Поиск центров вертикальной яркости для двухсторонних
 
@@ -48,6 +49,7 @@ Jimp.read(filename).then(function (image) {
 	var peaked = markBiArray(image, peakEndsU, 0xff0000ff);
 	peaked = markBiArray(peaked, peakEndsD, 0x0000ffff);
 	peaked = markArray(peaked, centers, 0x00ff00ff);
+	peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
 	writeImage(peaked, conf, "peaked_" + brightnessMin);
 	writeDataArray(peakEndsU.map((e)=>e[2]), conf,   "up_"+ brightnessMin);
 	writeDataArray(peakEndsD.map((e)=>e[2]), conf, "down_"+ brightnessMin);
