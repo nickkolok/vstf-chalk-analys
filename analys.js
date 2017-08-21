@@ -132,9 +132,7 @@ function findPeakEnds(image, points, normals, brightnessMin, par) {
 		} while(
 			image.getInterpixelTinycolor(curx, cury).getBrightness() >= brightnessMin
 		&&
-			curx >=0 && curx <=image.bitmap.width
-		&&
-			cury >=0 && cury <=image.bitmap.height
+			image.areCoordsInside(curx,cury)
 		);
 		ends.push([
 			curx,

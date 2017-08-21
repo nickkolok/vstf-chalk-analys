@@ -135,6 +135,19 @@ Jimp.prototype.getCenterOfBrightness = function (x, y, w, h) {
 };
 
 
+/**
+ * @param x the x coordinate
+ * @param y the y coordinate
+ * @returns true if (x,y) are valid coordinates, i.e. inside image
+*/
+Jimp.prototype.areCoordsInside = function (x, y) {
+    return (
+        x >=0 && x <= this.bitmap.width
+    &&
+        y >=0 && y <= this.bitmap.height
+    );
+};
+
 
 
 
