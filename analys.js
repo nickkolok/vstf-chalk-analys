@@ -18,7 +18,7 @@ Jimp.read(filename).then(function (image) {
 
 
 	// Поиск центров вертикальной яркости для двухсторонних
-	var centers = getGaussBrightnessCenters(image, 8);
+	var centers = getGaussBrightnessCenters(image, conf.gaussRadius);
 	var normalsU = [], normalsD = [];
 
 	if (countNormals) {

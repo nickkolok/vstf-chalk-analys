@@ -5,4 +5,5 @@ module.exports = {
 	brightnessMin: 120,
 	countNormals: true,
 	delta: 10,
+	gaussRadius: 8,
 }
