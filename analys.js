@@ -23,8 +23,35 @@ Jimp.read(filename).then(function (image) {
 	// Поиск центров вертикальной яркости для двухсторонних
 
 	var timeBeforeGauss = Date.now();
-	var centers = getGaussBrightnessCenters(image, conf.gaussRadius);
-	console.log("Гауссово размытие: " + (Date.now() - timeBeforeGauss)/1000 + "с");
+
+	var cachename = conf.resultname + "__centers.cache";
+	var centers = [];
+	if (conf.centersCacheEnabled && fs.existsSync(cachename + ".dat.txt")) {
+		try{
+			centers = fs.readFileSync(cachename + ".dat.txt","utf-8").split("\n");
+			centers.length--;
+			if (centers.length != image.bitmap.width) {
+				centers = [];
+				throw new Error("Centers quantity mismatch");
+			}
+			centers = centers.map((c)=>1*c);
+			console.log("Чтение центров из кэша: " + (Date.now() - timeBeforeGauss)/1000 + " с");
+		}catch(e){
+			console.log('Файл кэша центров повреждён или не может быть прочитан по иным причинам');
+			console.log(e);
+		}
+
+	}
+
+	if (!(centers.length)) {
+		centers = getGaussBrightnessCenters(image, conf.gaussRadius);
+		console.log("Гауссово размытие: " + (Date.now() - timeBeforeGauss)/1000 + " с");
+	}
+	// Пишем центры в кэш
+	writeDataArray(centers, conf, "__centers.cache");
+
+
+
 
 	// Построение нормалей
 	var normalsU = [], normalsD = [];

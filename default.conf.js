@@ -6,4 +6,5 @@ module.exports = {
 	countNormals: true,
 	delta: 10,
 	gaussRadius: 8,
+	centersCacheEnabled: true,
 }
