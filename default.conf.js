@@ -1,3 +1,10 @@
+'use strict';
+
+var brights = [];
+for(var b = 248; b >=48; b-=8){
+	brights.push(b);
+}
+
 module.exports = {
 	filename: "./images/test3-1.png",
 	//filename: "./images/ex1-up1.png";
@@ -7,5 +14,5 @@ module.exports = {
 	delta: 10,
 	gaussRadius: 8,
 	centersCacheEnabled: true,
-	brights:[128,120,96,64],
+	brights:brights,
 }
