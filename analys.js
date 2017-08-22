@@ -75,10 +75,11 @@ Jimp.read(filename).then(function (image) {
 	var peakEndsD = findPeakEnds(image, centers, normalsD, conf);
 	console.log("Поиск  нижних пиков: " + (Date.now() - timeBeforePeaksD)/1000 + " с");
 
+	var centered = markArray(image, centers, 0x00ff00ff);
+
 	for (var j = 0; j < conf.brights.length; j++) {
-		var peaked = markBiArray(image, peakEndsU[j], 0xff0000ff);
+		var peaked = markBiArray(centered, peakEndsU[j], 0xff0000ff);
 		peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
-		peaked = markArray(peaked, centers, 0x00ff00ff);
 		peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
 		writeImage(peaked, conf, "peaked_" + conf.brights[j]);
 		writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j]);
