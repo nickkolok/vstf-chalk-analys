@@ -18,7 +18,6 @@ var brightnessMin = process.argv[3];
 if (brightnessMin && (conf.brights.indexOf(1*brightnessMin) == -1)){
 	conf.brights.push(1*brightnessMin);
 	conf.brights.sort((a,b)=>b-a);
-	console.log(conf.brights);
 }
 
 var countNormals = conf.countNormals;
