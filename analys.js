@@ -22,7 +22,9 @@ if (brightnessMin && (conf.brights.indexOf(1*brightnessMin) == -1)){
 
 var countNormals = conf.countNormals;
 
-conf.resultname = (conf.resultname || ("results/" + filename.split("/").reverse()[0] + "__"));
+var imagename = filename.split("/").reverse()[0];
+mkdirp.sync('results/'+imagename+'.d');
+conf.resultname = (conf.resultname || ("results/" + imagename + ".d/" + imagename + "__"));
 
 Jimp.read(filename).then(function (image) {
     // do stuff with the image
