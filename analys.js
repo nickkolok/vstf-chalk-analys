@@ -3,6 +3,7 @@ var tinycolor = require("tinycolor2");
 var fs = require("fs");
 var mkdirp = require('mkdirp');
 var linearRegression = require('everpolate').linearRegression;
+var _progress = require('cli-progress');
 
 require("./jimp-plugin.js")(Jimp);
 
@@ -163,6 +164,15 @@ function markBiArray(image, array, intcolor) {
 }
 
 function findPeakEnds(image, points, normals, brightnessMin, par) {
+
+	var bar = new _progress.Bar({
+		format: 'Поиск иголок [{bar}] {percentage}% | ETA: {eta}s',
+		hideCursor: true
+	});
+	bar.start(image.bitmap.width, 0);
+
+	var step = Math.ceil(image.bitmap.width/200);
+
 	var ends = [];
 	for (var i = 0; i < image.bitmap.width; i++) {
 		var curx = i;
@@ -182,6 +192,11 @@ function findPeakEnds(image, points, normals, brightnessMin, par) {
 			cury,
 			len * par.step,
 		]);
+		if(i%step==0){
+			bar.update(i);
+		}
 	}
+	bar.update(image.bitmap.width);
+	bar.stop();
 	return ends;
 }
