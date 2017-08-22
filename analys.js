@@ -69,21 +69,22 @@ Jimp.read(filename).then(function (image) {
 	}
 
 	var timeBeforePeaksU = Date.now();
-	var peakEndsU = findPeakEnds(image, centers, normalsU, brightnessMin, conf);
+	var peakEndsU = findPeakEnds(image, centers, normalsU, conf);
 	console.log("Поиск верхних пиков: " + (Date.now() - timeBeforePeaksU)/1000 + " с");
 	var timeBeforePeaksD = Date.now();
-	var peakEndsD = findPeakEnds(image, centers, normalsD, brightnessMin, conf);
+	var peakEndsD = findPeakEnds(image, centers, normalsD, conf);
 	console.log("Поиск  нижних пиков: " + (Date.now() - timeBeforePeaksD)/1000 + " с");
 
+	for (var j = 0; j < conf.brights.length; j++) {
+		var peaked = markBiArray(image, peakEndsU[j], 0xff0000ff);
+		peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
+		peaked = markArray(peaked, centers, 0x00ff00ff);
+		peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
+		writeImage(peaked, conf, "peaked_" + conf.brights[j]);
+		writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j]);
+		writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
 
-	var peaked = markBiArray(image, peakEndsU, 0xff0000ff);
-	peaked = markBiArray(peaked, peakEndsD, 0x0000ffff);
-	peaked = markArray(peaked, centers, 0x00ff00ff);
-	peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
-	writeImage(peaked, conf, "peaked_" + brightnessMin);
-	writeDataArray(peakEndsU.map((e)=>e[2]), conf,   "up_"+ brightnessMin);
-	writeDataArray(peakEndsD.map((e)=>e[2]), conf, "down_"+ brightnessMin);
-
+	}
 	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + "с");
 
 }).catch(function (err) {
@@ -165,7 +166,7 @@ function markBiArray(image, array, intcolor) {
 	return marked;
 }
 
-function findPeakEnds(image, points, normals, brightnessMin, par) {
+function findPeakEnds(image, points, normals, par) {
 
 	var bar = new _progress.Bar({
 		format: 'Поиск иголок [{bar}] {percentage}% | ETA: {eta}s',
@@ -173,28 +174,40 @@ function findPeakEnds(image, points, normals, brightnessMin, par) {
 	});
 	bar.start(image.bitmap.width, 0);
 
-	var step = Math.ceil(image.bitmap.width/200);
+	var barstep = Math.ceil(image.bitmap.width/200);
+
+	//var ends = (new Array(conf.brights.length)).fill([]);//Так нельзя, потому что массивы - ссылки! Нет, сссцццылки!!!
+	//var ends = (new Array(conf.brights.length)).map((e)=>[]); //А так виснет
 
 	var ends = [];
+	for (var j = 0; j < conf.brights.length; j++){
+		ends.push([]);
+	}
 	for (var i = 0; i < image.bitmap.width; i++) {
 		var curx = i;
 		var cury = points[i];
 		var len = 0;
-		do {
-			curx += normals[i][0];
-			cury += normals[i][1];
-			len++;
-		} while(
-			image.getInterpixelTinycolor(curx, cury).getBrightness() >= brightnessMin
-		&&
-			image.areCoordsInside(curx,cury)
-		);
-		ends.push([
-			curx,
-			cury,
-			len * par.step,
-		]);
-		if(i%step==0){
+
+		for(var j = 0; j < conf.brights.length; j++) {
+			do {
+				curx += normals[i][0];
+				cury += normals[i][1];
+				len++;
+			} while(
+				image.getInterpixelTinycolor(curx, cury).getBrightness() >= conf.brights[j]
+			&&
+				image.areCoordsInside(curx,cury)
+			);
+			var curpeak = [
+				curx,
+				cury,
+				len * par.step,
+			];
+			ends[j].push(curpeak);
+		}
+
+
+		if(i%barstep==0){
 			bar.update(i);
 		}
 	}

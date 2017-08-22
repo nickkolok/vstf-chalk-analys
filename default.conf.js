@@ -7,4 +7,5 @@ module.exports = {
 	delta: 10,
 	gaussRadius: 8,
 	centersCacheEnabled: true,
+	brights:[128,120,96,64],
 }
