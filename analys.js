@@ -9,6 +9,8 @@ require("./jimp-plugin.js")(Jimp);
 
 var conf = require('./default.conf.js');
 
+mkdirp.sync('results');
+
 
 var filename = process.argv[2] || conf.filename;
 var brightnessMin = process.argv[3] || conf.brightnessMin;
