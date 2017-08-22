@@ -105,9 +105,10 @@ function writeImage(image, par, postfix){
 }
 
 function writeDataArray(arr, par, postfix) {
-	fs.writeFileSync(
+	fs.writeFile(
 		par.resultname + postfix + ".dat.txt",
 		arr.join("\n")+"\n"
+		,()=>0
 	);
 }
 
