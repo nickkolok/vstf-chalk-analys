@@ -13,7 +13,14 @@ mkdirp.sync('results');
 
 
 var filename = process.argv[2] || conf.filename;
-var brightnessMin = process.argv[3] || conf.brightnessMin;
+var brightnessMin = process.argv[3];
+
+if (brightnessMin && (conf.brights.indexOf(1*brightnessMin) == -1)){
+	conf.brights.push(1*brightnessMin);
+	conf.brights.sort((a,b)=>b-a);
+	console.log(conf.brights);
+}
+
 var countNormals = conf.countNormals;
 
 conf.resultname = (conf.resultname || ("results/" + filename.split("/").reverse()[0] + "__"));
