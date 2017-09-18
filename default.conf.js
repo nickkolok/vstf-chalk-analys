@@ -1,7 +1,7 @@
 'use strict';
 
 var brights = [];
-for(var b = 248; b >=48; b-=8){
+for(var b = 248; b >=8; b-=8){
 	brights.push(b);
 }
 
