@@ -2,7 +2,9 @@ var Jimp = require("jimp");
 var tinycolor = require("tinycolor2");
 var fs = require("fs");
 var mkdirp = require('mkdirp');
-var linearRegression = require('everpolate').linearRegression;
+
+var paraquire = require('paraquire')(module);
+var linearRegression = paraquire('everpolate').linearRegression;
 var _progress = require('cli-progress');
 
 require("./jimp-plugin.js")(Jimp);
