@@ -15,4 +15,6 @@ module.exports = {
 	gaussRadius: 8,
 	centersCacheEnabled: true,
 	brights:brights,
+	writeSeparator: "\r\n",
+	readSeparator: /\r*\n/g,
 }

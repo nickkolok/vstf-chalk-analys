@@ -41,7 +41,7 @@ Jimp.read(filename).then(function (image) {
 	var centers = [];
 	if (conf.centersCacheEnabled && fs.existsSync(cachename + ".dat.txt")) {
 		try{
-			centers = fs.readFileSync(cachename + ".dat.txt","utf-8").split("\n");
+			centers = fs.readFileSync(cachename + ".dat.txt","utf-8").split(conf.readSeparator);
 			centers.length--;
 			if (centers.length != image.bitmap.width) {
 				centers = [];
@@ -110,7 +110,7 @@ function writeImage(image, par, postfix){
 function writeDataArray(arr, par, postfix) {
 	fs.writeFile(
 		par.resultname + postfix + ".dat.txt",
-		arr.join("\n")+"\n"
+		arr.join(conf.writeSeparator) + conf.writeSeparator
 		,()=>0
 	);
 }
