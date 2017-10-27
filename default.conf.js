@@ -11,7 +11,7 @@ module.exports = {
 	step: 1,
 	brightnessMin: 120,
 	countNormals: true,
-	delta: 10,
+	delta: 50,
 	gaussRadius: 8,
 	centersCacheEnabled: true,
 	brights:brights,
