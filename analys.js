@@ -28,8 +28,21 @@ var imagename = filename.split("/").reverse()[0];
 mkdirp.sync('results/'+imagename+'.d');
 conf.resultname = (conf.resultname || ("results/" + imagename + ".d/" + imagename + "__"));
 
-Jimp.read(filename).then(function (image) {
-    // do stuff with the image
+var centers = [];
+
+readMainImage();
+
+
+function readMainImage() {
+	Jimp.read(filename).then(function (image) {
+		// do stuff with the image
+		processMainImage(image);
+	}).catch(function (err) {
+		// handle an exception
+		console.log(err);
+	});
+}
+function processMainImage(image){
 
 	image.flip(false, true); // Тут ось y направлена вниз, свихнуться можно!
 
@@ -38,7 +51,7 @@ Jimp.read(filename).then(function (image) {
 	var timeBeforeGauss = Date.now();
 
 	var cachename = conf.resultname + "__centers.cache";
-	var centers = [];
+//	var centers = [];
 	if (conf.centersCacheEnabled && fs.existsSync(cachename + ".dat.txt")) {
 		try{
 			centers = fs.readFileSync(cachename + ".dat.txt","utf-8").split(conf.readSeparator);
@@ -97,11 +110,8 @@ Jimp.read(filename).then(function (image) {
 
 	}
 	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + "с");
+}
 
-}).catch(function (err) {
-    // handle an exception
-	console.log(err);
-});
 
 function writeImage(image, par, postfix){
 	image.write(par.resultname + postfix + ".png");
