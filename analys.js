@@ -166,7 +166,8 @@ function getBrightnessCenters(image) {
 
 function getGaussBrightnessCenters(image, size) {
 	var gauss = image.clone();
-	gauss.gaussian(size || 8);
+//	gauss.gaussian(size || 8);
+	gauss.blur(size || 8);
 	return getBrightnessCenters(gauss);
 }
 
