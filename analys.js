@@ -108,6 +108,8 @@ function processMainImage(image){
 		writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j]);
 		writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
 
+
+/*
 		var peakEndsSmoothedLengthU = smoothArray(peakEndsU[j].map((e)=>e[2]),conf.smoothDelta);
 		//console.log(peakEndsSmoothedLengthU);
 		//console.log(peakEndsU[j].map((e)=>e[2]));
@@ -117,14 +119,46 @@ function processMainImage(image){
 			var y = centers[i] + normalsU[i][1]*peakEndsSmoothedLengthU[i];
 			peakEndsSmoothedU.push([x,y]);
 		}
+*/
 
-		var smoothed = markBiArray(centered, peakEndsSmoothedU, 0xff00ffff);
+		var smoothed = markBiArray(
+			centered,
+			makeSmoothArray(
+				peakEndsU[j],
+				centers,
+				normalsU,
+				conf
+			),
+			0xff00ffff
+		);
+
+		smoothed = markBiArray(
+			smoothed,
+			makeSmoothArray(
+				peakEndsD[j],
+				centers,
+				normalsD,
+				conf
+			),
+			0xffff00ff
+		);
 		smoothed.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
 		writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
 
 
 	}
 	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + "с");
+}
+
+function makeSmoothArray(peakEnds, centers, normals, conf){
+	var peakEndsSmoothedLength = smoothArray(peakEnds.map((e)=>e[2]),conf.smoothDelta);
+	var peakEndsSmoothed = [];
+	for (var i = 0; i < normals.length; i++) {
+		var x = i          + normals[i][0]*peakEndsSmoothedLength[i];
+		var y = centers[i] + normals[i][1]*peakEndsSmoothedLength[i];
+		peakEndsSmoothed.push([x,y]);
+	}
+	return peakEndsSmoothed;
 }
 
 

@@ -1,7 +1,7 @@
 'use strict';
 
 var brights = [];
-for(var b = 248; b >=8; b-=8){
+for(var b = 256; b >=0; b-=1){
 	brights.push(b);
 }
 
@@ -17,4 +17,5 @@ module.exports = {
 	brights:brights,
 	writeSeparator: "\r\n",
 	readSeparator: /\r*\n/g,
+	smoothDelta: 2,
 }

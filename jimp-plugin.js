@@ -149,6 +149,21 @@ Jimp.prototype.areCoordsInside = function (x, y) {
 };
 
 
+/**
+ * @param x1 the x coordinate of begin
+ * @param y1 the y coordinate of begin
+ * @param x2 the x coordinate of end
+ * @param y2 the y coordinate of end
+*/
+Jimp.prototype.drawLine = function (x, y) {
+    return (
+        x >=0 && x <= this.bitmap.width
+    &&
+        y >=0 && y <= this.bitmap.height
+    );
+};
+
+
 
 
 
