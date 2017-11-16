@@ -18,4 +18,5 @@ module.exports = {
 	writeSeparator: "\r\n",
 	readSeparator: /\r*\n/g,
 	smoothDelta: 2,
+	inpeakAvgCoeff:10,
 }

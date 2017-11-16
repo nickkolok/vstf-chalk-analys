@@ -107,6 +107,7 @@ function processMainImage(image){
 		writeImage(peaked, conf, "peaked_" + conf.brights[j]);
 		writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j]);
 		writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
+		writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
 
 		var smoothed = markBiArray(
 			centered,
@@ -237,6 +238,8 @@ function findPeakEnds(image, points, normals, par) {
 	//var ends = (new Array(conf.brights.length)).map((e)=>[]); //А так виснет
 
 	var ends = [];
+	ends.brightnessTable = [];
+	ends.brightnessSlice = [];
 	for (var j = 0; j < conf.brights.length; j++){
 		ends.push([]);
 	}
@@ -245,13 +248,22 @@ function findPeakEnds(image, points, normals, par) {
 		var cury = points[i];
 		var len = 0;
 
+		ends.brightnessTable[i] = [];
+
 		for(var j = 0; j < conf.brights.length; j++) {
 			do {
+				var curBrightness = image.getInterpixelTinycolor(curx, cury).getBrightness();
+				ends.brightnessTable[i].push(curBrightness);
 				curx += normals[i][0];
 				cury += normals[i][1];
 				len++;
 			} while(
-				image.getInterpixelTinycolor(curx, cury).getBrightness() >= conf.brights[j]
+				// curBrightness >= conf.brights[j]
+				getAverageIfThereIs(
+					ends.brightnessTable[i],
+					ends.brightnessTable[i].length - 1,
+					par.inpeakAvgCoeff
+				) >= conf.brights[j]
 			&&
 				image.areCoordsInside(curx,cury)
 			);
@@ -268,6 +280,25 @@ function findPeakEnds(image, points, normals, par) {
 			bar.update(i);
 		}
 	}
+	for(var j = 0; j < conf.brights.length; j++) {
+		// Считаем среднюю длину иголки для заданной яркости
+		var avg = 0;
+		for(var i = 0; i < image.bitmap.width; i++) {
+			avg +=ends[j][2];
+		}
+		avg /= image.bitmap.width;
+		avg /= par.step;
+		avg  = Math.round(avg);
+
+		ends.brightnessSlice[j] = [];
+		for(var i = 0; i < image.bitmap.width; i++) {
+			ends.brightnessSlice[j][i] = 1*!!(
+				ends.brightnessTable[i][j] >= conf.brights[j]
+			);
+		}
+	}
+
+
 	bar.update(image.bitmap.width);
 	bar.stop();
 	return ends;
@@ -286,4 +317,26 @@ function smoothArray(ends, delta){
 	}
 	return smooth;
 }
+
+
+function getAverageIfThereIs(arr, index, retro){
+	var avg = arr[index];
+	var begin = Math.max(0, index - retro + 1);
+	var count = index - begin;
+	for(var i = begin; i < index; i++) {
+		avg +=arr[i];
+	}
+	avg /= (count + 1);
+
+	return avg;
+}
+
+var a = [0,1,2,3,4,5];
+
+console.log(getAverageIfThereIs(a,0,1));
+console.log(getAverageIfThereIs(a,0,2));
+console.log(getAverageIfThereIs(a,1,2));
+console.log(getAverageIfThereIs(a,5,3));
+console.log(getAverageIfThereIs(a,5,10));
+console.log(getAverageIfThereIs(a,4,3));
 
