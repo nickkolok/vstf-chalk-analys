@@ -17,4 +17,5 @@ module.exports = {
 	brights:brights,
 	writeSeparator: "\r\n",
 	readSeparator: /\r*\n/g,
+	smoothDelta: 2,
 }
