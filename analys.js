@@ -143,7 +143,7 @@ function processMainImage(image){
 			}, 100);
 		})($j);
 	}
-	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + "с");
+	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + " с");
 }
 
 function makeSmoothArray(peakEnds, centers, normals, conf){
