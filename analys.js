@@ -103,38 +103,42 @@ function processMainImage(image){
 
 	var centered = markArray(image, centers, 0x00ff00ff);
 
-	for (var j = 0; j < conf.brights.length; j++) {
-		var peaked = markBiArray(centered.clone(), peakEndsU[j], 0xff0000ff);
-		peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
-		peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
-		writeImage(peaked, conf, "peaked_" + conf.brights[j]);
-		writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j]);
-		writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
-		writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
+	for (var $j = 0; $j < conf.brights.length; $j++) {
+		(function(j){
+			setTimeoutStubborn(function(){
+				var peaked = markBiArray(centered.clone(), peakEndsU[j], 0xff0000ff);
+				peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
+				peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
+				writeImage(peaked, conf, "peaked_" + conf.brights[j]);
+				writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j]);
+				writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
+				writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
 
-		var smoothed = markBiArray(
-			centered.clone(),
-			makeSmoothArray(
-				peakEndsU[j],
-				centers,
-				normalsU,
-				conf
-			),
-			0xff00ffff
-		);
+				var smoothed = markBiArray(
+					centered.clone(),
+					makeSmoothArray(
+						peakEndsU[j],
+						centers,
+						normalsU,
+						conf
+					),
+					0xff00ffff
+				);
 
-		smoothed = markBiArray(
-			smoothed,
-			makeSmoothArray(
-				peakEndsD[j],
-				centers,
-				normalsD,
-				conf
-			),
-			0xffff00ff
-		);
-		smoothed.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
-		writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
+				smoothed = markBiArray(
+					smoothed,
+					makeSmoothArray(
+						peakEndsD[j],
+						centers,
+						normalsD,
+						conf
+					),
+					0xffff00ff
+				);
+				smoothed.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
+				writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
+			}, 100);
+		})($j);
 	}
 	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + "с");
 }
@@ -333,3 +337,19 @@ function getAverageIfThereIs(arr, index, retro){
 
 	return avg;
 }
+
+
+function setTimeoutStubborn(fun, time) {
+	setTimeout(function(){
+		try{
+			fun();
+		} catch(e){
+			console.log(e);
+			console.log('Но вы держитесь!');
+			setTimeoutStubborn(fun, time);
+		}
+	}, time);
+}
+
+
+
