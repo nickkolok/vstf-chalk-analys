@@ -104,7 +104,7 @@ function processMainImage(image){
 	var centered = markArray(image, centers, 0x00ff00ff);
 
 	for (var j = 0; j < conf.brights.length; j++) {
-		var peaked = markBiArray(centered, peakEndsU[j], 0xff0000ff);
+		var peaked = markBiArray(centered.clone(), peakEndsU[j], 0xff0000ff);
 		peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
 		peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
 		writeImage(peaked, conf, "peaked_" + conf.brights[j]);
@@ -113,7 +113,7 @@ function processMainImage(image){
 		writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
 
 		var smoothed = markBiArray(
-			centered,
+			centered.clone(),
 			makeSmoothArray(
 				peakEndsU[j],
 				centers,
@@ -220,7 +220,7 @@ function markArray(image, array, intcolor) {
 
 function markBiArray(image, array, intcolor) {
 	//TODO: таки setPixelTinycolor()
-	var marked = image.clone();
+	var marked = image;//.clone();
 	for (var i = 0; i < array.length; i++) {
 		marked.setPixelColor(intcolor, array[i][0], array[i][1]);
 	}
