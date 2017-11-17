@@ -345,14 +345,14 @@ function getAverageIfThereIs(arr, index, retro){
 	return avg;
 }
 
-
+var holdTimes = 0;
 function setTimeoutStubborn(fun, time) {
 	setTimeout(function(){
 		try{
 			fun();
 		} catch(e){
 			console.log(e);
-			console.log('Но вы держитесь!');
+			console.log('Но вы держитесь!    ('+(holdTimes++)+')');
 			setTimeoutStubborn(fun, time);
 		}
 	}, time);
