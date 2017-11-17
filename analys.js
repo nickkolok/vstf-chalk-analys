@@ -163,7 +163,7 @@ function makeSmoothArray(peakEnds, centers, normals, conf){
 
 
 function writeImage(image, par, postfix){
-	image.write(par.resultname + postfix + ".png");
+	image.writeStubborn(par.resultname + postfix + ".png");
 }
 
 function writeDataArray(arr, par, postfix) {
