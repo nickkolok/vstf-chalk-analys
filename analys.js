@@ -72,6 +72,7 @@ function processMainImage(image){
 	}
 
 	if (!(centers.length)) {
+		console.log('Начинаем размытие...');
 		centers = getGaussBrightnessCenters(image, conf.gaussRadius);
 		console.log("Гауссово размытие: " + (Date.now() - timeBeforeGauss)/1000 + " с");
 	}
