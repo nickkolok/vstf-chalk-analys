@@ -44,6 +44,8 @@ function readMainImage() {
 }
 function processMainImage(image){
 
+	image.scale(conf.scaleFactor); // Да, так правда лучше
+
 	image.flip(false, true); // Тут ось y направлена вниз, свихнуться можно!
 
 	// Поиск центров вертикальной яркости для двухсторонних

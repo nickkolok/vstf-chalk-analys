@@ -19,4 +19,5 @@ module.exports = {
 	readSeparator: /\r*\n/g,
 	smoothDelta: 2,
 	inpeakAvgCoeff:10,
+	scaleFactor:1,
 }
