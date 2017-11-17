@@ -148,6 +148,21 @@ Jimp.prototype.areCoordsInside = function (x, y) {
     );
 };
 
+// Same as write, by try again and again
+Jimp.prototype.writeStubborn = function(name, cb){
+	var self = this;
+	try{
+		this.write(name, cb);
+		delete this;
+	}catch(e){
+		console.log(name);
+		console.log(e);
+		setTimeout(function(){
+			self.writeStubborn(name, cb);
+		},100); // TODO: 100 should be a parameter
+	}
+};
+
 
 
 
