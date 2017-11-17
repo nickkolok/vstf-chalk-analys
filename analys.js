@@ -333,13 +333,3 @@ function getAverageIfThereIs(arr, index, retro){
 
 	return avg;
 }
-
-var a = [0,1,2,3,4,5];
-
-console.log(getAverageIfThereIs(a,0,1));
-console.log(getAverageIfThereIs(a,0,2));
-console.log(getAverageIfThereIs(a,1,2));
-console.log(getAverageIfThereIs(a,5,3));
-console.log(getAverageIfThereIs(a,5,10));
-console.log(getAverageIfThereIs(a,4,3));
-
