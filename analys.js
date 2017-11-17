@@ -13,6 +13,9 @@ var conf = require('./default.conf.js');
 
 mkdirp.sync('results');
 
+Error.stackTraceLimit = Infinity;
+
+// js --max_old_space_size=2047  analys.js
 
 var filename = process.argv[2] || conf.filename;
 var brightnessMin = process.argv[3];
