@@ -111,33 +111,37 @@ function processMainImage(image){
 			setTimeoutStubborn(function(){
 				var peaked = markBiArray(centered.clone(), peakEndsU[j], 0xff0000ff);
 				peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
-				peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
-				writeImage(peaked, conf, "peaked_" + conf.brights[j]);
 				writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j]);
 				writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
+
 				writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
+
+				var smoothedEndsU = makeSmoothArray(peakEndsU[j],centers,normalsU,conf);
+				var smoothedEndsD = makeSmoothArray(peakEndsD[j],centers,normalsD,conf);
+				delete peakEndsU[j];
+				delete peakEndsD[j];
 
 				var smoothed = markBiArray(
 					centered.clone(),
-					makeSmoothArray(
-						peakEndsU[j],
-						centers,
-						normalsU,
-						conf
-					),
+					smoothedEndsU,
 					0xff00ffff
 				);
 
 				smoothed = markBiArray(
 					smoothed,
-					makeSmoothArray(
-						peakEndsD[j],
-						centers,
-						normalsD,
-						conf
-					),
+					smoothedEndsD,
 					0xffff00ff
 				);
+
+
+
+				writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
+				writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
+				//writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
+
+
+				peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
+				writeImage(peaked, conf, "peaked_" + conf.brights[j]);
 				smoothed.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
 				writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
 			}, 100);
@@ -152,7 +156,7 @@ function makeSmoothArray(peakEnds, centers, normals, conf){
 	for (var i = 0; i < normals.length; i++) {
 		var x = i          + normals[i][0]*peakEndsSmoothedLength[i];
 		var y = centers[i] + normals[i][1]*peakEndsSmoothedLength[i];
-		peakEndsSmoothed.push([x,y]);
+		peakEndsSmoothed.push([x,y,peakEndsSmoothedLength[i]]);
 	}
 	return peakEndsSmoothed;
 }
@@ -354,5 +358,22 @@ function setTimeoutStubborn(fun, time) {
 	}, time);
 }
 
+function getLocMaxs(arr){
+	var locmaxs = [];
 
+	for(var i = 1; i < arr.length - 1; i++){
+		if(arr[i] > arr[i+1] && arr[i] > arr[i-1]) {
+			locmaxs.push(i);
+		}
+	}
+
+	//console.log('Распределение расстояний между локальными максимумами');
+
+	var distances = [];
+
+	for(var i = 1; i < locmaxs.length; i++) {
+		distances.push(locmaxs[i]-locmaxs[i-1]);
+	}
+	return distances;
+}
 
