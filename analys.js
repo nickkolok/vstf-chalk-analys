@@ -19,13 +19,15 @@ Error.stackTraceLimit = Infinity;
 
 // js --max_old_space_size=2047  analys.js
 
+/*
 var queueData = async.queue(function (task, callback) {
 	console.log('Performing task: ' + task.name);
 	console.log('Waiting to be processed: ', queueData.length());
 	console.log('----------------------------------');
 	callback();
-}, 1/*conf.concurrentDataWritings*/);
-
+}, 1/*conf.concurrentDataWritings);
+*/
+var queueData = [];
 
 var queueImage = async.queue(function (task, callback) {
 	console.log('Performing task: ' + task.name);
@@ -99,9 +101,9 @@ function processMainImage(image){
 		console.log("Размытие: " + (Date.now() - timeBeforeGauss)/1000 + " с");
 	}
 	// Пишем центры в кэш
-	queueData.push({name: "__centers.cache"}, function(err, callback) {
-		writeDataArray(centers, conf, "__centers.cache");
-	});
+	//queueData.push({name: "__centers.cache"}, function(callback) {
+	writeDataArray(centers, conf, "__centers.cache");
+	//});
 
 
 
@@ -134,16 +136,10 @@ function processMainImage(image){
 				var peaked = markBiArray(centered.clone(), peakEndsU[j], 0xff0000ff);
 				peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
 
-				queueData.push({name:   "up_"+ conf.brights[j]}, function(err, callback) {
-					writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j], callback);
-				});
-				queueData.push({name: "down_"+ conf.brights[j]}, function(err, callback) {
-					writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
-				});
+				writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j]);
+				writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
 
-				queueData.push({name:   "up_slice_"+ conf.brights[j]}, function(err, callback) {
-					writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
-				});
+				writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
 
 				var smoothedEndsU = makeSmoothArray(peakEndsU[j],centers,normalsU,conf);
 				var smoothedEndsD = makeSmoothArray(peakEndsD[j],centers,normalsD,conf);
@@ -163,30 +159,24 @@ function processMainImage(image){
 				);
 
 
-				queueData.push({name:   "up_locmaxs_dist_"+ conf.brights[j]}, function(err, callback) {
-					writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
-				});
-				queueData.push({name: "down_locmaxs_dist_"+ conf.brights[j]}, function(err, callback) {
-					writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
-				});
+				writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
+				writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
 
 				//writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
 
 
-				queueData.push({name: "peaked_"+ conf.brights[j]}, function(err, callback) {
-					peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
-					writeImage(peaked, conf, "peaked_" + conf.brights[j], callback);
-				});
+				//peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
+				writeImage(peaked, conf, "peaked_" + conf.brights[j]);
 
-				queueData.push({name: "smoothed_"+ conf.brights[j]}, function(err, callback) {
-					smoothed.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
-					writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
-				});
+				//smoothed.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
+				writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
 			}
 			//, 100);
 		})($j);
 	}
 	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + " с");
+	console.log(queueData);
+	async.series(queueData);
 }
 
 function makeSmoothArray(peakEnds, centers, normals, conf){
@@ -201,28 +191,41 @@ function makeSmoothArray(peakEnds, centers, normals, conf){
 }
 
 
-function writeImage(image, par, postfix, callback){
-	var filename = par.resultname + postfix + ".png";
-	image.write(filename, 
-		(err,data) =>{
-			console.log('Записано: ' + filename);
-			if(callback){
-				callback(err,data);
-			}
+function writeImage(image, par, postfix){
+	
+	queueData.push(
+		//{name: postfix},
+		function(callback) {
+			var filename = par.resultname + postfix + ".png";
+			image.flip(false, true);
+			image.write(filename, 
+				(err,data) =>{
+					console.log('Записано: ' + filename);
+					if(callback){
+						callback();
+					}
+				}
+			);
 		}
 	);
 }
 
-function writeDataArray(arr, par, postfix, callback) {
-	var filename = par.resultname + postfix + ".dat.txt";
-	fs.writeFile(
-		filename,
-		arr.join(conf.writeSeparator) + conf.writeSeparator
-		,(err,data)=>{
-			console.log('Записано: ' + filename);
-			if(callback){
-				callback(err,data);
-			}
+function writeDataArray(arr, par, postfix) {
+	queueData.push(
+		//{name: postfix},
+		function(cb) {
+			var filename = par.resultname + postfix + ".dat.txt";
+			fs.writeFile(
+				filename,
+				arr.join(conf.writeSeparator) + conf.writeSeparator
+				,(err,data)=>{
+					fs.statSync(filename);
+					console.log('Записано: ' + filename);
+					if(cb){
+						cb();
+					}
+				}
+			);
 		}
 	);
 }
