@@ -152,9 +152,13 @@ function processMainImage(image){
 				);
 
 
+				queueData.push({name:   "up_locmaxs_dist_"+ conf.brights[j]}, function(err, callback) {
+					writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
+				});
+				queueData.push({name: "down_locmaxs_dist_"+ conf.brights[j]}, function(err, callback) {
+					writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
+				});
 
-				writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
-				writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
 				//writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
 
 
