@@ -123,12 +123,16 @@ function processMainImage(image){
 				var peaked = markBiArray(centered.clone(), peakEndsU[j], 0xff0000ff);
 				peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
 
-				queueData.push({name: "up_"+ conf.brights[j]}, function(err, callback) {
+				queueData.push({name:   "up_"+ conf.brights[j]}, function(err, callback) {
 					writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j], callback);
 				});
-				writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
+				queueData.push({name: "down_"+ conf.brights[j]}, function(err, callback) {
+					writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
+				});
 
-				writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
+				queueData.push({name:   "up_slice_"+ conf.brights[j]}, function(err, callback) {
+					writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
+				});
 
 				var smoothedEndsU = makeSmoothArray(peakEndsU[j],centers,normalsU,conf);
 				var smoothedEndsD = makeSmoothArray(peakEndsD[j],centers,normalsD,conf);
