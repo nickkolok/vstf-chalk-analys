@@ -24,7 +24,7 @@ var queueData = async.queue(function (task, callback) {
 	console.log('Waiting to be processed: ', queueData.length());
 	console.log('----------------------------------');
 	callback();
-}, conf.concurrentDataWritings);
+}, 1/*conf.concurrentDataWritings*/);
 
 
 var queueImage = async.queue(function (task, callback) {
@@ -64,7 +64,9 @@ function readMainImage() {
 }
 function processMainImage(image){
 
+	console.log('Scaling started...');
 	image.scale(conf.scaleFactor); // Да, так правда лучше
+	console.log('Scaling finished.');
 
 	image.flip(false, true); // Тут ось y направлена вниз, свихнуться можно!
 
@@ -97,7 +99,9 @@ function processMainImage(image){
 		console.log("Размытие: " + (Date.now() - timeBeforeGauss)/1000 + " с");
 	}
 	// Пишем центры в кэш
-	writeDataArray(centers, conf, "__centers.cache");
+	queueData.push({name: "__centers.cache"}, function(err, callback) {
+		writeDataArray(centers, conf, "__centers.cache");
+	});
 
 
 
@@ -169,12 +173,12 @@ function processMainImage(image){
 				//writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
 
 
-				queueImage.push({name: "peaked_"+ conf.brights[j]}, function(err, callback) {
+				queueData.push({name: "peaked_"+ conf.brights[j]}, function(err, callback) {
 					peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
 					writeImage(peaked, conf, "peaked_" + conf.brights[j], callback);
 				});
 
-				queueImage.push({name: "smoothed_"+ conf.brights[j]}, function(err, callback) {
+				queueData.push({name: "smoothed_"+ conf.brights[j]}, function(err, callback) {
 					smoothed.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
 					writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
 				});
@@ -198,7 +202,15 @@ function makeSmoothArray(peakEnds, centers, normals, conf){
 
 
 function writeImage(image, par, postfix, callback){
-	image.write(par.resultname + postfix + ".png", callback);
+	var filename = par.resultname + postfix + ".png";
+	image.write(filename, 
+		(err,data) =>{
+			console.log('Записано: ' + filename);
+			if(callback){
+				callback(err,data);
+			}
+		}
+	);
 }
 
 function writeDataArray(arr, par, postfix, callback) {
@@ -215,6 +227,19 @@ function writeDataArray(arr, par, postfix, callback) {
 	);
 }
 
+/*
+function writeDataArray(arr, par, postfix, callback) {
+	var filename = par.resultname + postfix + ".dat.txt";
+	fs.writeFileSync(
+		filename,
+		arr.join(conf.writeSeparator) + conf.writeSeparator,
+	);
+	console.log('Записано: ' + filename);
+	if(callback){
+		callback(err,data);
+	}
+}
+*/
 function normalize(arr, len) {
 	var norm = Math.sqrt(arr[0]*arr[0]+arr[1]*arr[1]);
 	for(var i = 0; i < 2; i++){
