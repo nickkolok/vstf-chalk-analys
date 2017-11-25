@@ -24,8 +24,6 @@ var queueData = async.queue(function (task, callback) {
 	task(callback);
 }, conf.concurrentDataWritings);
 
-//var queueData = [];
-
 var queueImage = async.queue(function (task, callback) {
 	task(callback);
 }, conf.concurrentImageWritings);
@@ -95,11 +93,7 @@ function processMainImage(image){
 		console.log("Размытие: " + (Date.now() - timeBeforeGauss)/1000 + " с");
 	}
 	// Пишем центры в кэш
-	//queueData.push({name: "__centers.cache"}, function(callback) {
 	writeDataArray(centers, conf, "__centers.cache");
-	//});
-
-
 
 
 	// Построение нормалей
@@ -125,52 +119,41 @@ function processMainImage(image){
 
 	for (var $j = 0; $j < conf.brights.length; $j++) {
 		(function(j){
-			//setTimeoutStubborn(function()
-			{
-				var peaked = markBiArray(centered.clone(), peakEndsU[j], 0xff0000ff);
-				peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
+			var peaked = markBiArray(centered.clone(), peakEndsU[j], 0xff0000ff);
+			peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
 
-				writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j]);
-				writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
+			writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j]);
+			writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
 
-				writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
+			writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
 
-				var smoothedEndsU = makeSmoothArray(peakEndsU[j],centers,normalsU,conf);
-				var smoothedEndsD = makeSmoothArray(peakEndsD[j],centers,normalsD,conf);
-				//delete peakEndsU[j];
-				//delete peakEndsD[j];
+			var smoothedEndsU = makeSmoothArray(peakEndsU[j],centers,normalsU,conf);
+			var smoothedEndsD = makeSmoothArray(peakEndsD[j],centers,normalsD,conf);
 
-				var smoothed = markBiArray(
-					centered.clone(),
-					smoothedEndsU,
-					0xff00ffff
-				);
+			var smoothed = markBiArray(
+				centered.clone(),
+				smoothedEndsU,
+				0xff00ffff
+			);
 
-				smoothed = markBiArray(
-					smoothed,
-					smoothedEndsD,
-					0xffff00ff
-				);
+			smoothed = markBiArray(
+				smoothed,
+				smoothedEndsD,
+				0xffff00ff
+			);
 
 
-				writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
-				writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
+			writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
+			writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
 
-				//writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
+			//writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
 
 
-				//peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
-				writeImage(peaked, conf, "peaked_" + conf.brights[j]);
-
-				//smoothed.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
-				writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
-			}
-			//, 100);
+			writeImage(  peaked, conf,   "peaked_" + conf.brights[j]);
+			writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
 		})($j);
 	}
 	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + " с");
-	//console.log(queueData);
-	//async.series(queueData);
 }
 
 function makeSmoothArray(peakEnds, centers, normals, conf){
@@ -188,7 +171,6 @@ function makeSmoothArray(peakEnds, centers, normals, conf){
 function writeImage(image, par, postfix){
 	
 	queueImage.push(
-		//{name: postfix},
 		function(callback) {
 			var filename = par.resultname + postfix + ".png";
 			image.flip(false, true);
@@ -206,7 +188,6 @@ function writeImage(image, par, postfix){
 
 function writeDataArray(arr, par, postfix) {
 	queueData.push(
-		//{name: postfix},
 		function(cb) {
 			var filename = par.resultname + postfix + ".dat.txt";
 			fs.writeFile(
@@ -224,19 +205,6 @@ function writeDataArray(arr, par, postfix) {
 	);
 }
 
-/*
-function writeDataArray(arr, par, postfix, callback) {
-	var filename = par.resultname + postfix + ".dat.txt";
-	fs.writeFileSync(
-		filename,
-		arr.join(conf.writeSeparator) + conf.writeSeparator,
-	);
-	console.log('Записано: ' + filename);
-	if(callback){
-		callback(err,data);
-	}
-}
-*/
 function normalize(arr, len) {
 	var norm = Math.sqrt(arr[0]*arr[0]+arr[1]*arr[1]);
 	for(var i = 0; i < 2; i++){
@@ -424,8 +392,6 @@ function getLocMaxs(arr){
 			locmaxs.push(i);
 		}
 	}
-
-	//console.log('Распределение расстояний между локальными максимумами');
 
 	var distances = [];
 
