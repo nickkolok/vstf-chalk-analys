@@ -7,6 +7,8 @@ var paraquire = require('paraquire')(module);
 var linearRegression = paraquire('everpolate').linearRegression;
 var _progress = require('cli-progress');
 
+var async = require('async');
+
 require("./jimp-plugin.js")(Jimp);
 
 var conf = require('./default.conf.js');
@@ -16,6 +18,14 @@ mkdirp.sync('results');
 Error.stackTraceLimit = Infinity;
 
 // js --max_old_space_size=2047  analys.js
+
+var queueData = async.queue(function (task, callback) {
+	console.log('Performing task: ' + task.name);
+	console.log('Waiting to be processed: ', queueData.length());
+	console.log('----------------------------------');
+	callback();
+}, conf.concurrentDataWritings);
+
 
 var filename = process.argv[2] || conf.filename;
 var brightnessMin = process.argv[3];
@@ -108,18 +118,22 @@ function processMainImage(image){
 
 	for (var $j = 0; $j < conf.brights.length; $j++) {
 		(function(j){
-			setTimeoutStubborn(function(){
+			//setTimeoutStubborn(function()
+			{
 				var peaked = markBiArray(centered.clone(), peakEndsU[j], 0xff0000ff);
 				peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
-				writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j]);
+
+				queueData.push({name: "up_"+ conf.brights[j]}, function(err, callback) {
+					writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j], callback);
+				});
 				writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
 
 				writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
 
 				var smoothedEndsU = makeSmoothArray(peakEndsU[j],centers,normalsU,conf);
 				var smoothedEndsD = makeSmoothArray(peakEndsD[j],centers,normalsD,conf);
-				delete peakEndsU[j];
-				delete peakEndsD[j];
+				//delete peakEndsU[j];
+				//delete peakEndsD[j];
 
 				var smoothed = markBiArray(
 					centered.clone(),
@@ -144,7 +158,8 @@ function processMainImage(image){
 				writeImage(peaked, conf, "peaked_" + conf.brights[j]);
 				smoothed.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
 				writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
-			}, 100);
+			}
+			//, 100);
 		})($j);
 	}
 	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + " с");

@@ -4,6 +4,7 @@
   "description": "",
   "main": "analys.js",
   "dependencies": {
+    "async": "^2.6.0",
     "cli-progress": "^1.6.0",
     "everpolate": "0.0.3",
     "jimp": "^0.2.28",
