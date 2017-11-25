@@ -230,12 +230,7 @@ function markArray(image, array, intcolor) {
 }
 
 function markBiArray(image, array, intcolor) {
-	//TODO: таки setPixelTinycolor()
-	var marked = image;//.clone();
-	for (var i = 0; i < array.length; i++) {
-		marked.setPixelColor(intcolor, array[i][0], array[i][1]);
-	}
-	return marked;
+	return image.markPoints(array, intcolor);
 }
 
 function findPeakEnds(image, points, normals, par) {

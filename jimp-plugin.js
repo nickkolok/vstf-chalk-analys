@@ -163,6 +163,19 @@ Jimp.prototype.writeStubborn = function(name, cb){
 	}
 };
 
+/**
+ * @param array array of [x,y] coordinates
+ * @param intcolor color to mark
+ * @returns this
+*/
+
+Jimp.prototype.markPoints = function(array, intcolor) {
+	//TODO: setPixelTinycolor()
+	for (var i = 0; i < array.length; i++) {
+		this.setPixelColor(intcolor, array[i][0], array[i][1]);
+	}
+	return this;
+}
 
 
 
