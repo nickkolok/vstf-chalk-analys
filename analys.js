@@ -27,6 +27,13 @@ var queueData = async.queue(function (task, callback) {
 }, conf.concurrentDataWritings);
 
 
+var queueImage = async.queue(function (task, callback) {
+	console.log('Performing task: ' + task.name);
+	console.log('Waiting to be processed: ', queueImage.length());
+	console.log('----------------------------------');
+	callback();
+}, conf.concurrentImageWritings);
+
 var filename = process.argv[2] || conf.filename;
 var brightnessMin = process.argv[3];
 
@@ -162,10 +169,15 @@ function processMainImage(image){
 				//writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
 
 
-				peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
-				writeImage(peaked, conf, "peaked_" + conf.brights[j]);
-				smoothed.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
-				writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
+				queueImage.push({name: "peaked_"+ conf.brights[j]}, function(err, callback) {
+					peaked.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
+					writeImage(peaked, conf, "peaked_" + conf.brights[j], callback);
+				});
+
+				queueImage.push({name: "smoothed_"+ conf.brights[j]}, function(err, callback) {
+					smoothed.flip(false, true); // Тут ось y направлена вниз, свихнуться можно! Вертаем как было
+					writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
+				});
 			}
 			//, 100);
 		})($j);
@@ -185,8 +197,8 @@ function makeSmoothArray(peakEnds, centers, normals, conf){
 }
 
 
-function writeImage(image, par, postfix){
-	image.writeStubborn(par.resultname + postfix + ".png");
+function writeImage(image, par, postfix, callback){
+	image.write(par.resultname + postfix + ".png", callback);
 }
 
 function writeDataArray(arr, par, postfix, callback) {
