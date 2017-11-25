@@ -21,19 +21,13 @@ Error.stackTraceLimit = Infinity;
 
 
 var queueData = async.queue(function (task, callback) {
-	console.log('Performing task: ' + task.name);
-	console.log('Waiting to be processed: ', queueData.length());
-	console.log('----------------------------------');
-	callback();
-}, 1/*conf.concurrentDataWritings*/);
+	task(callback);
+}, conf.concurrentDataWritings);
 
 //var queueData = [];
 
 var queueImage = async.queue(function (task, callback) {
-	console.log('Performing task: ' + task.name);
-	console.log('Waiting to be processed: ', queueImage.length());
-	console.log('----------------------------------');
-	callback();
+	task(callback);
 }, conf.concurrentImageWritings);
 
 var filename = process.argv[2] || conf.filename;
@@ -175,8 +169,8 @@ function processMainImage(image){
 		})($j);
 	}
 	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + " с");
-	console.log(queueData);
-	async.series(queueData);
+	//console.log(queueData);
+	//async.series(queueData);
 }
 
 function makeSmoothArray(peakEnds, centers, normals, conf){
@@ -193,7 +187,7 @@ function makeSmoothArray(peakEnds, centers, normals, conf){
 
 function writeImage(image, par, postfix){
 	
-	queueData.push(
+	queueImage.push(
 		//{name: postfix},
 		function(callback) {
 			var filename = par.resultname + postfix + ".png";
