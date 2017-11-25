@@ -166,11 +166,17 @@ function writeImage(image, par, postfix){
 	image.writeStubborn(par.resultname + postfix + ".png");
 }
 
-function writeDataArray(arr, par, postfix) {
+function writeDataArray(arr, par, postfix, callback) {
+	var filename = par.resultname + postfix + ".dat.txt";
 	fs.writeFile(
-		par.resultname + postfix + ".dat.txt",
+		filename,
 		arr.join(conf.writeSeparator) + conf.writeSeparator
-		,()=>0
+		,(err,data)=>{
+			console.log('Записано: ' + filename);
+			if(callback){
+				callback(err,data);
+			}
+		}
 	);
 }
 
