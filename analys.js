@@ -19,15 +19,15 @@ Error.stackTraceLimit = Infinity;
 
 // js --max_old_space_size=2047  analys.js
 
-/*
+
 var queueData = async.queue(function (task, callback) {
 	console.log('Performing task: ' + task.name);
 	console.log('Waiting to be processed: ', queueData.length());
 	console.log('----------------------------------');
 	callback();
-}, 1/*conf.concurrentDataWritings);
-*/
-var queueData = [];
+}, 1/*conf.concurrentDataWritings*/);
+
+//var queueData = [];
 
 var queueImage = async.queue(function (task, callback) {
 	console.log('Performing task: ' + task.name);
