@@ -128,8 +128,14 @@ function processMainImage(image){
 			writeDataArray(lengthsUp  , conf,   "up_"+ conf.brights[j]);
 			writeDataArray(lengthsDown, conf, "down_"+ conf.brights[j]);
 
-			writeDataArray(normLocMins(lengthsUp  , conf.locMinsDelta), conf,   "up_min-normed_"+ conf.brights[j]);
-			writeDataArray(normLocMins(lengthsDown, conf.locMinsDelta), conf, "down_min-normed_"+ conf.brights[j]);
+			var edgeUp   = normLocMins(lengthsUp  , conf.locMinsDelta);
+			var edgeDown = normLocMins(lengthsDown, conf.locMinsDelta);
+
+			writeDataArray(edgeUp  , conf,   "up_min-normed_"+ conf.brights[j]);
+			writeDataArray(edgeDown, conf, "down_min-normed_"+ conf.brights[j]);
+
+
+
 
 			writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
 
@@ -148,6 +154,17 @@ function processMainImage(image){
 				0xffff00ff
 			);
 
+			smoothed = markBiArray(
+				smoothed,
+				makeNormalArray(edgeUp  .mins,centers,normalsU,conf),
+				0xff69b4ff
+			);
+
+			smoothed = markBiArray(
+				smoothed,
+				makeNormalArray(edgeDown.mins,centers,normalsD,conf),
+				0xff69b4ff
+			);
 
 			writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
 			writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
@@ -424,6 +441,7 @@ function normLocMins(arr, delta) {
 	for(var i = 0; i < arr.length; i++) {
 		arr[i] -= mins[i];
 	}
+	arr.mins = mins;
 	return arr;
 }
 
