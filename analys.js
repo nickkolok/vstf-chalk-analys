@@ -164,6 +164,11 @@ function processMainImage(image){
 
 function makeSmoothArray(peakEnds, centers, normals, conf){
 	var peakEndsSmoothedLength = smoothArray(peakEnds.map((e)=>e[2]),conf.smoothDelta);
+	return makeNormalArray(peakEndsSmoothedLength, centers, normals, conf);
+}
+
+
+function makeNormalArray(peakEndsSmoothedLength, centers, normals, conf){
 	var peakEndsSmoothed = [];
 	for (var i = 0; i < normals.length; i++) {
 		var x = i          + normals[i][0]*peakEndsSmoothedLength[i];
@@ -172,7 +177,6 @@ function makeSmoothArray(peakEnds, centers, normals, conf){
 	}
 	return peakEndsSmoothed;
 }
-
 
 function writeImage(image, par, postfix){
 	
