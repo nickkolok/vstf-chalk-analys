@@ -122,8 +122,14 @@ function processMainImage(image){
 			var peaked = markBiArray(centered.clone(), peakEndsU[j], 0xff0000ff);
 			peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
 
-			writeDataArray(peakEndsU[j].map((e)=>e[2]), conf,   "up_"+ conf.brights[j]);
-			writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
+			var lengthsUp   = peakEndsU[j].map((e)=>e[2]);
+			var lengthsDown = peakEndsD[j].map((e)=>e[2]);
+
+			writeDataArray(lengthsUp  , conf,   "up_"+ conf.brights[j]);
+			writeDataArray(lengthsDown, conf, "down_"+ conf.brights[j]);
+
+			writeDataArray(normLocMins(lengthsUp  , conf.locMinsDelta), conf,   "up_min-normed_"+ conf.brights[j]);
+			writeDataArray(normLocMins(lengthsDown, conf.locMinsDelta), conf, "down_min-normed_"+ conf.brights[j]);
 
 			writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
 
@@ -401,3 +407,23 @@ function getLocMaxs(arr){
 	return distances;
 }
 
+function normLocMins(arr, delta) {
+	var mins = [];
+	for(var i = 0; i < arr.length; i++){
+		var min = Infinity;
+		for(var j = Math.max(0, i - delta); j < Math.min(arr.length, i + delta); j++){
+			min = Math.min(min,arr[j]);
+		}
+		mins[i] = min;
+	}
+
+	for(var i = 0; i < arr.length; i++) {
+		arr[i] -= mins[i];
+	}
+	return arr;
+}
+
+/*
+console.log(normLocMins([1,1,1],2));
+console.log(normLocMins([1,1,1,3,-1,1,1,1,5,5,5,5,7],2));
+*/
