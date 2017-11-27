@@ -125,9 +125,24 @@ function processMainImage(image){
 
 	var centered = markArray(image, centers, 0x00ff00ff);
 
+	var edgeU = smoothArray(peakEndsU[jEdge].map((e)=>e[2]), conf.edgeDelta);
+	var edgeD = smoothArray(peakEndsD[jEdge].map((e)=>e[2]), conf.edgeDelta);
+
+	var edged = markBiArray(
+		centered.clone(),
+		makeNormalArray(edgeU,centers,normalsU,conf),
+		0xff69b4ff
+	);
+
+	edged = markBiArray(
+		edged,
+		makeNormalArray(edgeD,centers,normalsD,conf),
+		0xff69b4ff
+	);
+
 	for (var $j = 0; $j < conf.brights.length; $j++) {
 		(function(j){
-			var peaked = markBiArray(centered.clone(), peakEndsU[j], 0xff0000ff);
+			var peaked = markBiArray(edged.clone(), peakEndsU[j], 0xff0000ff);
 			peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
 
 			var lengthsUp   = peakEndsU[j].map((e)=>e[2]);
@@ -136,13 +151,12 @@ function processMainImage(image){
 			writeDataArray(lengthsUp  , conf,   "up_"+ conf.brights[j]);
 			writeDataArray(lengthsDown, conf, "down_"+ conf.brights[j]);
 
-			var edgeUp   = normLocMins(lengthsUp  , conf.locMinsDelta);
-			var edgeDown = normLocMins(lengthsDown, conf.locMinsDelta);
+
+			var edgeUp   = decreaseArr(lengthsUp  , edgeU);
+			var edgeDown = decreaseArr(lengthsDown, edgeD);
 
 			writeDataArray(edgeUp  , conf,   "up_min-normed_"+ conf.brights[j]);
 			writeDataArray(edgeDown, conf, "down_min-normed_"+ conf.brights[j]);
-
-
 
 
 			writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
@@ -161,7 +175,7 @@ function processMainImage(image){
 				smoothedEndsD,
 				0xffff00ff
 			);
-
+/*
 			smoothed = markBiArray(
 				smoothed,
 				makeNormalArray(edgeUp  .mins,centers,normalsU,conf),
@@ -173,6 +187,7 @@ function processMainImage(image){
 				makeNormalArray(edgeDown.mins,centers,normalsD,conf),
 				0xff69b4ff
 			);
+*/
 
 			writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
 			writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
@@ -465,3 +480,7 @@ function normLocMins(arr, delta) {
 console.log(normLocMins([1,1,1],2));
 console.log(normLocMins([1,1,1,3,-1,1,1,1,5,5,5,5,7],2));
 */
+
+function decreaseArr(arr, dec){
+	return arr.map((elem,i)=>(elem - dec[i]));
+}
