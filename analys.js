@@ -95,6 +95,14 @@ function processMainImage(image){
 	// Пишем центры в кэш
 	writeDataArray(centers, conf, "__centers.cache");
 
+	var avgCentersBrightness = Math.round(getAvgCenterBrightness(image, centers));
+	var jEdge = conf.brights.indexOf(avgCentersBrightness);
+	if(jEdge === -1) {
+		conf.brights.push(avgCentersBrightness);
+		conf.brights.sort((a,b)=>b-a);
+		jEdge = conf.brights.indexOf(avgCentersBrightness);
+	}
+	console.log(conf.brights);
 
 	// Построение нормалей
 	var normalsU = [], normalsD = [];
@@ -289,6 +297,14 @@ function markArray(image, array, intcolor) {
 
 function markBiArray(image, array, intcolor) {
 	return image.markPoints(array, intcolor);
+}
+
+function getAvgCenterBrightness(image, centers) {
+	var avg = 0;
+	for(var i = 0; i < centers.length; i++) {
+		avg +=image.getMinBrightness(i-8, centers[i]-8, 16, 16);
+	}
+	return avg/centers.length;
 }
 
 function findPeakEnds(image, points, normals, par) {
