@@ -95,7 +95,9 @@ function processMainImage(image){
 	// Пишем центры в кэш
 	writeDataArray(centers, conf, "__centers.cache");
 
-	var avgCentersBrightness = Math.round(getAvgCenterBrightness(image, centers));
+	var avgCentersBrightness =
+		Math.round(getAvgCenterBrightness(image, centers)) +
+		conf.edgeThresholdCorrection;
 	var jEdge = conf.brights.indexOf(avgCentersBrightness);
 	if(jEdge === -1) {
 		conf.brights.push(avgCentersBrightness);
@@ -175,19 +177,6 @@ function processMainImage(image){
 				smoothedEndsD,
 				0xffff00ff
 			);
-/*
-			smoothed = markBiArray(
-				smoothed,
-				makeNormalArray(edgeUp  .mins,centers,normalsU,conf),
-				0xff69b4ff
-			);
-
-			smoothed = markBiArray(
-				smoothed,
-				makeNormalArray(edgeDown.mins,centers,normalsD,conf),
-				0xff69b4ff
-			);
-*/
 
 			writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
 			writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
@@ -317,7 +306,10 @@ function markBiArray(image, array, intcolor) {
 function getAvgCenterBrightness(image, centers) {
 	var avg = 0;
 	for(var i = 0; i < centers.length; i++) {
-		avg +=image.getMinBrightness(i-8, centers[i]-8, 16, 16);
+		avg +=image.getMinBrightness(
+			i-conf.edgeCenterRadius, centers[i]-conf.edgeCenterRadius,
+			2*conf.edgeCenterRadius, 2*conf.edgeCenterRadius
+		);
 	}
 	return avg/centers.length;
 }
