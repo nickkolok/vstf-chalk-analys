@@ -102,6 +102,34 @@ Jimp.prototype.getAvgBrightness = function (x, y, w, h) {
 
 
 /**
+ * Returns the Number value of minimum brightness of a region
+ * @param x the x coordinate
+ * @param y the y coordinate
+ * @param w the width
+ * @param h height
+ * @returns the Number value of minimum brightness of a region
+*/
+Jimp.prototype.getMinBrightness = function (x, y, w, h) {
+    x = Math.max(x, 0);
+    y = Math.max(y, 0);
+	if (x + w > this.bitmap.width) {
+		w = this.bitmap.width - x;
+	}//TODO: maybe +1
+	if (y + h > this.bitmap.height) {
+		h = this.bitmap.height - y;
+	}//TODO: maybe +1
+
+
+	var min = 257;
+    this.scan(x, y, w, h, function(curx, cury){
+		min = Math.min(min, this.getPixelTinycolor(curx, cury).getBrightness());
+	});
+
+	return min;
+};
+
+
+/**
  * Finds mass center by brightness
  * @param x the x coordinate
  * @param y the y coordinate
