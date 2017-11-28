@@ -233,7 +233,7 @@ function writeDataArray(arr, par, postfix) {
 			var filename = par.resultname + postfix + ".dat.txt";
 			fs.writeFile(
 				filename,
-				arr.join(conf.writeSeparator) + conf.writeSeparator
+				arr.map((a)=>(a/par.scaleFactor)).join(conf.writeSeparator) + conf.writeSeparator
 				,(err,data)=>{
 					fs.statSync(filename);
 					console.log('Записано: ' + filename);
