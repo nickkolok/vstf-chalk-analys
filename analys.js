@@ -80,7 +80,7 @@ function processMainImage(image){
 				centers = [];
 				throw new Error("Centers quantity mismatch");
 			}
-			centers = centers.map((c)=>1*c);
+			centers = centers.map((c)=>1*c*conf.scaleFactor);
 			console.log("Чтение центров из кэша: " + (Date.now() - timeBeforeGauss)/1000 + " с");
 		}catch(e){
 			console.log('Файл кэша центров повреждён или не может быть прочитан по иным причинам');
