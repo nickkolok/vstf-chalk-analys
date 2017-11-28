@@ -89,24 +89,18 @@ function processMainImage(image){
 
 	}
 
+	console.log('Начинаем размытие...');
+	var blured = image.clone();
+	blured.blur(conf.gaussRadius);
+	writeImage(blured, conf, "__blured__");
+	console.log("Размытие: " + (Date.now() - timeBeforeGauss)/1000 + " с");
+
 	if (!(centers.length)) {
-		console.log('Начинаем размытие...');
-		centers = getGaussBrightnessCenters(image, conf.gaussRadius);
-		console.log("Размытие: " + (Date.now() - timeBeforeGauss)/1000 + " с");
+		centers = getBrightnessCenters(blured);
 	}
 	// Пишем центры в кэш
 	writeDataArray(centers, conf, "__centers.cache");
 
-	var avgCentersBrightness =
-		Math.round(getAvgCenterBrightness(image, centers)) +
-		conf.edgeThresholdCorrection;
-	var jEdge = conf.brights.indexOf(avgCentersBrightness);
-	if(jEdge === -1) {
-		conf.brights.push(avgCentersBrightness);
-		conf.brights.sort((a,b)=>b-a);
-		jEdge = conf.brights.indexOf(avgCentersBrightness);
-	}
-	console.log(conf.brights);
 
 	// Построение нормалей
 	var normalsU = [], normalsD = [];
@@ -127,10 +121,29 @@ function processMainImage(image){
 	var peakEndsD = findPeakEnds(image, centers, normalsD, conf);
 	console.log("Поиск  нижних пиков: " + (Date.now() - timeBeforePeaksD)/1000 + " с");
 
+	// {{ Подсчёт полосы
+	var avgCentersBrightness = getAvgCenterBrightness(image, centers);
+	avgCentersBrightness =
+		Math.round(avgCentersBrightness) +
+		conf.edgeThresholdCorrection;
+
+	var bluredConf={};
+	for(var prop in conf){
+		bluredConf[prop]=conf[prop];
+	}
+	bluredConf.brights=[avgCentersBrightness];
+	var peakEndsBluredU = findPeakEnds(blured, centers, normalsU, bluredConf);
+	var peakEndsBluredD = findPeakEnds(blured, centers, normalsD, bluredConf);
+
+	var edgeU = smoothArray(peakEndsBluredU[0].map((e)=>e[2]), conf.edgeDelta);
+	var edgeD = smoothArray(peakEndsBluredD[0].map((e)=>e[2]), conf.edgeDelta);
+
+	// }} Подсчёт полосы
+
+
+
 	var centered = markArray(image, centers, 0x00ff00ff);
 
-	var edgeU = smoothArray(peakEndsU[jEdge].map((e)=>e[2]), conf.edgeDelta);
-	var edgeD = smoothArray(peakEndsD[jEdge].map((e)=>e[2]), conf.edgeDelta);
 
 	var edged = markBiArray(
 		centered.clone(),
