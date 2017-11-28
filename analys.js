@@ -122,7 +122,7 @@ function processMainImage(image){
 	console.log("Поиск  нижних пиков: " + (Date.now() - timeBeforePeaksD)/1000 + " с");
 
 	// {{ Подсчёт полосы
-	var avgCentersBrightness = getAvgCenterBrightness(image, centers);
+	var avgCentersBrightness = getAvgCenterBrightness(blured, centers);
 	avgCentersBrightness =
 		Math.round(avgCentersBrightness) +
 		conf.edgeThresholdCorrection;
