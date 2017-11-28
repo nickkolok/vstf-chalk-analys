@@ -61,6 +61,13 @@ function processMainImage(image){
 	console.log('Scaling started...');
 	image.scale(conf.scaleFactor); // Да, так правда лучше
 	console.log('Scaling finished.');
+
+	fs.writeFile(
+		conf.resultname + ".conf",
+		JSON.stringify(conf),
+		()=>(0)
+	);
+
 	conf.gaussRadius *= conf.scaleFactor;
 
 
