@@ -61,6 +61,8 @@ function processMainImage(image){
 	console.log('Scaling started...');
 	image.scale(conf.scaleFactor); // Да, так правда лучше
 	console.log('Scaling finished.');
+	conf.gaussRadius *= conf.scaleFactor;
+
 
 	image.flip(false, true); // Тут ось y направлена вниз, свихнуться можно!
 
