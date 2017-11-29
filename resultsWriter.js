@@ -3,6 +3,7 @@ var paraquire = require('paraquire')(module);
 var async = require('async');
 var fs = require("fs");
 
+var timeBefore = Date.now();
 
 var queueData;
 var queueImage;
@@ -15,6 +16,10 @@ module.exports.initQueues = function initQueues(conf) {
 	queueImage = async.queue(function (task, callback) {
 		task(callback);
 	}, conf.concurrentImageWritings);
+
+	queueData.drain = queueImage.drain = function() {
+		console.log('Прошло времени: ' + (Date.now() - timeBefore)/1000 + ' c');
+	}
 }
 
 module.exports.writeConfig = function writeConfig(conf) {
