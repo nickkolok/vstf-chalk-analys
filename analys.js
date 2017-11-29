@@ -76,37 +76,13 @@ function processMainImage(image){
 	// Поиск центров вертикальной яркости для двухсторонних
 
 	var timeBeforeGauss = Date.now();
-
-	var cachename = conf.resultname + "__centers.cache";
-//	var centers = [];
-	if (conf.centersCacheEnabled && fs.existsSync(cachename + ".dat.txt")) {
-		try{
-			centers = fs.readFileSync(cachename + ".dat.txt","utf-8").split(conf.readSeparator);
-			centers.length--;
-			if (centers.length != image.bitmap.width) {
-				centers = [];
-				throw new Error("Centers quantity mismatch");
-			}
-			centers = centers.map((c)=>1*c*conf.scaleFactor);
-			console.log("Чтение центров из кэша: " + (Date.now() - timeBeforeGauss)/1000 + " с");
-		}catch(e){
-			console.log('Файл кэша центров повреждён или не может быть прочитан по иным причинам');
-			console.log(e);
-		}
-
-	}
-
 	console.log('Начинаем размытие...');
 	var blured = image.clone();
 	blured.blur(conf.gaussRadius);
 	writeImage(blured, conf, "__blured__");
 	console.log("Размытие: " + (Date.now() - timeBeforeGauss)/1000 + " с");
 
-	if (!(centers.length)) {
-		centers = getBrightnessCenters(blured);
-	}
-	// Пишем центры в кэш
-	writeDataArray(centers, conf, "__centers.cache");
+	centers = getLinearCenters(blured, conf);
 
 
 	// Построение нормалей
@@ -212,6 +188,38 @@ function processMainImage(image){
 	}
 	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + " с");
 }
+
+function getLinearCenters(blured, conf){
+	var cachename = conf.resultname + "__centers.cache";
+	var centers = [];
+	if (conf.centersCacheEnabled && fs.existsSync(cachename + ".dat.txt")) {
+		try{
+			centers = fs.readFileSync(cachename + ".dat.txt","utf-8").split(conf.readSeparator);
+			centers.length--;
+			if (centers.length != image.bitmap.width) {
+				centers = [];
+				throw new Error("Centers quantity mismatch");
+			}
+			centers = centers.map((c)=>1*c*conf.scaleFactor);
+			console.log("Чтение центров из кэша: " + (Date.now() - timeBeforeGauss)/1000 + " с");
+		}catch(e){
+			console.log('Файл кэша центров повреждён или не может быть прочитан по иным причинам');
+			console.log(e);
+		}
+
+	}
+
+
+	if (!(centers.length)) {
+		centers = getBrightnessCenters(blured);
+	}
+	// Пишем центры в кэш
+	writeDataArray(centers, conf, "__centers.cache");
+	return centers;
+
+}
+
+
 
 function makeSmoothArray(peakEnds, centers, normals, conf){
 	var peakEndsSmoothedLength = smoothArray(peakEnds.map((e)=>e[2]),conf.smoothDelta);
