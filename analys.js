@@ -1,32 +1,25 @@
 var Jimp = require("jimp");
 var tinycolor = require("tinycolor2");
 var fs = require("fs");
-var mkdirp = require('mkdirp');
 
 var paraquire = require('paraquire')(module);
 var linearRegression = paraquire('everpolate').linearRegression;
 var _progress = require('cli-progress');
 
-var async = require('async');
 
 require("./jimp-plugin.js")(Jimp);
 
+
+var wr = require('./resultsWriter.js');
+
+
 var conf = require('./default.conf.js');
 
-mkdirp.sync('results');
 
 Error.stackTraceLimit = Infinity;
 
 // js --max_old_space_size=2047  analys.js
 
-
-var queueData = async.queue(function (task, callback) {
-	task(callback);
-}, conf.concurrentDataWritings);
-
-var queueImage = async.queue(function (task, callback) {
-	task(callback);
-}, conf.concurrentImageWritings);
 
 var filename = process.argv[2] || conf.filename;
 var brightnessMin = process.argv[3];
@@ -39,10 +32,13 @@ if (brightnessMin && (conf.brights.indexOf(1*brightnessMin) == -1)){
 var countNormals = conf.countNormals;
 
 var imagename = filename.split("/").reverse()[0];
-mkdirp.sync('results/'+imagename+'.d');
 conf.resultname = (conf.resultname || ("results/" + imagename + ".d/" + imagename + "__"));
 
 var centers = [];
+
+wr.mkdirs(imagename);
+wr.initQueues(conf);
+
 
 readMainImage();
 
@@ -62,12 +58,8 @@ function processMainImage(image){
 	image.scale(conf.scaleFactor); // Да, так правда лучше
 	console.log('Scaling finished.');
 
-	fs.writeFile(
-		conf.resultname + ".conf",
-		JSON.stringify(conf),
-		()=>(0)
-	);
-
+	wr.writeConfig(conf);
+	
 	conf.gaussRadius *= conf.scaleFactor;
 
 
@@ -79,7 +71,7 @@ function processMainImage(image){
 	console.log('Начинаем размытие...');
 	var blured = image.clone();
 	blured.blur(conf.gaussRadius);
-	writeImage(blured, conf, "__blured__");
+	wr.writeImage(blured, conf, "__blured__");
 	console.log("Размытие: " + (Date.now() - timeBeforeGauss)/1000 + " с");
 
 	centers = getLinearCenters(blured, conf);
@@ -148,18 +140,18 @@ function processMainImage(image){
 			var lengthsUp   = peakEndsU[j].map((e)=>e[2]);
 			var lengthsDown = peakEndsD[j].map((e)=>e[2]);
 
-			writeDataArray(lengthsUp  , conf,   "up_"+ conf.brights[j]);
-			writeDataArray(lengthsDown, conf, "down_"+ conf.brights[j]);
+			wr.writeDataArray(lengthsUp  , conf,   "up_"+ conf.brights[j]);
+			wr.writeDataArray(lengthsDown, conf, "down_"+ conf.brights[j]);
 
 
 			var edgeUp   = decreaseArr(lengthsUp  , edgeU);
 			var edgeDown = decreaseArr(lengthsDown, edgeD);
 
-			writeDataArray(edgeUp  , conf,   "up_min-normed_"+ conf.brights[j]);
-			writeDataArray(edgeDown, conf, "down_min-normed_"+ conf.brights[j]);
+			wr.writeDataArray(edgeUp  , conf,   "up_min-normed_"+ conf.brights[j]);
+			wr.writeDataArray(edgeDown, conf, "down_min-normed_"+ conf.brights[j]);
 
 
-			writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
+			wr.writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
 
 			var smoothedEndsU = makeSmoothArray(peakEndsU[j],centers,normalsU,conf);
 			var smoothedEndsD = makeSmoothArray(peakEndsD[j],centers,normalsD,conf);
@@ -176,27 +168,28 @@ function processMainImage(image){
 				0xffff00ff
 			);
 
-			writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
-			writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
+			wr.writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
+			wr.writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
 
-			//writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
+			//wr.writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
 
 
-			writeImage(  peaked, conf,   "peaked_" + conf.brights[j]);
-			writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
+			wr.writeImage(  peaked, conf,   "peaked_" + conf.brights[j]);
+			wr.writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
 		})($j);
 	}
 	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + " с");
 }
 
 function getLinearCenters(blured, conf){
+	var timeBeforeGauss = Date.now();
 	var cachename = conf.resultname + "__centers.cache";
 	var centers = [];
 	if (conf.centersCacheEnabled && fs.existsSync(cachename + ".dat.txt")) {
 		try{
 			centers = fs.readFileSync(cachename + ".dat.txt","utf-8").split(conf.readSeparator);
 			centers.length--;
-			if (centers.length != image.bitmap.width) {
+			if (centers.length != blured.bitmap.width) {
 				centers = [];
 				throw new Error("Centers quantity mismatch");
 			}
@@ -214,7 +207,7 @@ function getLinearCenters(blured, conf){
 		centers = getBrightnessCenters(blured);
 	}
 	// Пишем центры в кэш
-	writeDataArray(centers, conf, "__centers.cache");
+	wr.writeDataArray(centers, conf, "__centers.cache");
 	return centers;
 
 }
@@ -235,43 +228,6 @@ function makeNormalArray(peakEndsSmoothedLength, centers, normals, conf){
 		peakEndsSmoothed.push([x,y,peakEndsSmoothedLength[i]]);
 	}
 	return peakEndsSmoothed;
-}
-
-function writeImage(image, par, postfix){
-	
-	queueImage.push(
-		function(callback) {
-			var filename = par.resultname + postfix + ".png";
-			image.flip(false, true);
-			image.write(filename, 
-				(err,data) =>{
-					console.log('Записано: ' + filename);
-					if(callback){
-						callback();
-					}
-				}
-			);
-		}
-	);
-}
-
-function writeDataArray(arr, par, postfix) {
-	queueData.push(
-		function(cb) {
-			var filename = par.resultname + postfix + ".dat.txt";
-			fs.writeFile(
-				filename,
-				arr.map((a)=>(a/par.scaleFactor)).join(conf.writeSeparator) + conf.writeSeparator
-				,(err,data)=>{
-					fs.statSync(filename);
-					console.log('Записано: ' + filename);
-					if(cb){
-						cb();
-					}
-				}
-			);
-		}
-	);
 }
 
 function normalize(arr, len) {
