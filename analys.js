@@ -261,13 +261,6 @@ function getBrightnessCenters(image) {
 	return centers;
 }
 
-function getGaussBrightnessCenters(image, size) {
-	var gauss = image.clone();
-//	gauss.gaussian(size || 8);
-	gauss.blur(size || 8);
-	return getBrightnessCenters(gauss);
-}
-
 function markArray(image, array, intcolor) {
 	//TODO: таки setPixelTinycolor()
 	var marked = image.clone();
