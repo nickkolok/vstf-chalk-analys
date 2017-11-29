@@ -135,9 +135,11 @@ Jimp.prototype.getMinBrightness = function (x, y, w, h) {
  * @param y the y coordinate
  * @param w the width
  * @param h height
+ * @param thres threshold below which brightness is said to be 0
  * @returns object with coordinates
 */
-Jimp.prototype.getCenterOfBrightness = function (x, y, w, h) {
+Jimp.prototype.getCenterOfBrightness = function (x, y, w, h, thres) {
+	thres = (thres || 0);
     x = Math.max(x, 0);
     y = Math.max(y, 0);
 	if (x + w > this.bitmap.width) {
@@ -150,7 +152,10 @@ Jimp.prototype.getCenterOfBrightness = function (x, y, w, h) {
 
 	var xsum = 0, ysum = 0, msum = 0;
     this.scan(x, y, w, h, function(curx, cury){
-		var curbr = this.getPixelTinycolor(curx, cury).getBrightness();
+		var curbr = Math.max(
+			this.getPixelTinycolor(curx, cury).getBrightness(),
+			thres
+		);
 		msum += curbr;
 		xsum += curbr * curx;
 		ysum += curbr * cury;

@@ -256,7 +256,7 @@ function makeNormals(centers, normalsU, normalsD, par){
 function getBrightnessCenters(image) {
 	var centers = [];
 	for (var i = 0; i < image.bitmap.width; i++) {
-		centers[i] = image.getCenterOfBrightness(i, 0, 1, image.bitmap.height).y;
+		centers[i] = image.getCenterOfBrightness(i, 0, 1, image.bitmap.height, conf.centersBrightnessThreshold).y;
 	}
 	return centers;
 }
