@@ -5,20 +5,16 @@ var fs = require("fs");
 var paraquire = require('paraquire')(module);
 var linearRegression = paraquire('everpolate').linearRegression;
 var _progress = require('cli-progress');
-
-
 require("./jimp-plugin.js")(Jimp);
 
 
 var wr = require('./resultsWriter.js');
-
-
 var conf = require('./default.conf.js');
 
 
 Error.stackTraceLimit = Infinity;
 
-// js --max_old_space_size=2047  analys.js
+// js --max_old_space_size=8190  analys.js
 
 
 var filename = process.argv[2] || conf.filename;
@@ -171,9 +167,6 @@ function processMainImage(image){
 			wr.writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
 			wr.writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
 
-			//wr.writeDataArray(peakEndsD[j].map((e)=>e[2]), conf, "down_"+ conf.brights[j]);
-
-
 			wr.writeImage(  peaked, conf,   "peaked_" + conf.brights[j]);
 			wr.writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
 		})($j);
@@ -209,7 +202,6 @@ function getLinearCenters(blured, conf){
 	// Пишем центры в кэш
 	wr.writeDataArray(centers, conf, "__centers.cache");
 	return centers;
-
 }
 
 
