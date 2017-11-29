@@ -346,6 +346,10 @@ function findPeakEnds(image, points, normals, par) {
 
 	var barstep = Math.ceil(image.bitmap.width/200);
 
+	if(points[0][1] === undefined) {
+		points = points.map((p,i)=>[i,p]);
+	}
+
 	//var ends = (new Array(conf.brights.length)).fill([]);//Так нельзя, потому что массивы - ссылки! Нет, сссцццылки!!!
 	//var ends = (new Array(conf.brights.length)).map((e)=>[]); //А так виснет
 
@@ -358,8 +362,8 @@ function findPeakEnds(image, points, normals, par) {
 		ends.push([]);
 	}
 	for (var i = 0; i < image.bitmap.width; i++) {
-		var curx = i;
-		var cury = points[i];
+		var curx = points[i][0];
+		var cury = points[i][1];
 		var len = 0;
 
 		ends.brightnessTable[i] = [];
