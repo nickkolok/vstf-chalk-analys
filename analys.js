@@ -465,11 +465,24 @@ function setTimeoutStubborn(fun, time) {
 	}, time);
 }
 
+function isLocMax(arr, i){
+	if(arr[i] > arr[i-1]){
+		var j = i+1;
+		while(arr[i] === arr[j]){
+			j++;
+		}
+		if(arr[i] > arr[j]) {
+			return true;
+		}
+	}
+	return false;
+}
+
 function getLocMaxs(arr){
 	var locmaxs = [];
 
 	for(var i = 1; i < arr.length - 1; i++){
-		if(arr[i] > arr[i+1] && arr[i] > arr[i-1]) {
+		if(isLocMax(arr,i)){
 			locmaxs.push(i);
 		}
 	}
