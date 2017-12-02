@@ -1,8 +1,10 @@
+var paraquire = require('paraquire')(module);
+
+//var Jimp = paraquire("jimp", {builtin:['fs','util','stream'],sandbox:{process:process}});
 var Jimp = require("jimp");
 var tinycolor = require("tinycolor2");
 var fs = require("fs");
 
-var paraquire = require('paraquire')(module);
 var linearRegression = paraquire('everpolate').linearRegression;
 var _progress = require('cli-progress');
 require("./jimp-plugin.js")(Jimp);
