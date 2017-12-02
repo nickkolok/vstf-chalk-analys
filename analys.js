@@ -87,8 +87,8 @@ function processMainImage(image){
 		for(var i = 0; i < normalsU.length; i++){
 			centers.push(dropCenter);
 		}
-		console.log(centers);
-		console.log(normalsU);
+		//console.log(centers);
+		//console.log(normalsU);
 	}else{
 		// Поиск центров вертикальной яркости для линейных
 
