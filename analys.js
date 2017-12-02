@@ -382,6 +382,9 @@ function findPeakEnds(image, points, normals, par) {
 		points = points.map((p,i)=>[i,p]);
 	}
 
+	var brights = par.brights.slice();
+	//brights.push(0.5);
+
 	//var ends = (new Array(conf.brights.length)).fill([]);//Так нельзя, потому что массивы - ссылки! Нет, сссцццылки!!!
 	//var ends = (new Array(conf.brights.length)).map((e)=>[]); //А так виснет
 
@@ -390,7 +393,7 @@ function findPeakEnds(image, points, normals, par) {
 	ends.brightnessSlice = [];
 	
 	
-	for (var j = 0; j < par.brights.length; j++){
+	for (var j = 0; j < brights.length; j++){
 		ends.push([]);
 	}
 	for (var i = 0; i < arrlen; i++) {
@@ -400,7 +403,7 @@ function findPeakEnds(image, points, normals, par) {
 
 		ends.brightnessTable[i] = [];
 
-		for(var j = 0; j < par.brights.length; j++) {
+		for(var j = 0; j < brights.length; j++) {
 			do {
 				var curBrightness = image.getInterpixelTinycolor(curx, cury).getBrightness();
 				ends.brightnessTable[i].push(curBrightness);
@@ -413,7 +416,7 @@ function findPeakEnds(image, points, normals, par) {
 					ends.brightnessTable[i],
 					ends.brightnessTable[i].length - 1,
 					par.inpeakAvgCoeff
-				) >= par.brights[j]
+				) >= brights[j]
 			&&
 				image.areCoordsInside(curx,cury)
 			);
@@ -435,16 +438,20 @@ function findPeakEnds(image, points, normals, par) {
 		// Считаем среднюю длину иголки для заданной яркости
 		var avg = 0;
 		for(var i = 0; i < arrlen; i++) {
-			avg +=ends[j][2];
+			avg +=ends[j][i][2];
 		}
 		avg /= image.bitmap.width;
 		avg /= par.step;
 		avg  = Math.round(avg);
+		//console.log(avg);
 
 		ends.brightnessSlice[j] = [];
 		for(var i = 0; i < arrlen; i++) {
+			if (ends.brightnessTable[i][avg] === undefined){
+				ends.brightnessTable[i][avg] = 0;
+			}
 			ends.brightnessSlice[j][i] = //1*!!(
-				ends.brightnessTable[i][j]// >= par.brights[j]
+				(ends.brightnessTable[i][avg] || 0)// >= par.brights[j]
 			;//);
 		}
 	}
