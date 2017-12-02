@@ -61,7 +61,10 @@ function processMainImage(image){
 
 	image.flip(false, true); // Тут ось y направлена вниз, свихнуться можно!
 
-	// Поиск центров вертикальной яркости для двухсторонних
+	var normalsU = [], normalsD = [];
+
+	var circular = /\.circ\./.test(filename);
+
 
 	var timeBeforeGauss = Date.now();
 	console.log('Начинаем размытие...');
@@ -70,20 +73,62 @@ function processMainImage(image){
 	wr.writeImage(blured, conf, "__blured__");
 	console.log("Размытие: " + (Date.now() - timeBeforeGauss)/1000 + " с");
 
-	centers = getLinearCenters(blured, conf);
 
 
-	// Построение нормалей
-	var normalsU = [], normalsD = [];
+	if (circular) {
+		console.log('*.circ.*   ---   обрабатывается как капля');
+		normalsD=[]; // Считаем, что нету нижних нормалей
+		normalsU=makeCircNormals(conf);
 
-	if (countNormals) {
-		// Считаем косые нормали
-		makeNormals(centers, normalsU, normalsD, conf);
-	} else {
-		// Обойдёмся прямыми
-		normalsU = (new Array(image.bitmap.width)).fill([0,  conf.step]);
-		normalsD = (new Array(image.bitmap.width)).fill([0, -conf.step]);
+		var dropCenter = [image.bitmap.width/2, image.bitmap.height/2];
+		centers=[];
+		for(var i = 0; i < normalsU.length; i++){
+			centers.push(dropCenter);
+		}
+		console.log(centers);
+		console.log(normalsU);
+	}else{
+		// Поиск центров вертикальной яркости для линейных
+
+
+		centers = getLinearCenters(blured, conf);
+
+		//console.log(centers);
+
+		// Построение нормалей
+		if (countNormals) {
+			// Считаем косые нормали
+			makeNormals(centers, normalsU, normalsD, conf);
+		} else {
+			// Обойдёмся прямыми
+			normalsU = (new Array(image.bitmap.width)).fill([0,  conf.step]);
+			normalsD = (new Array(image.bitmap.width)).fill([0, -conf.step]);
+		}
+
+		// {{ Подсчёт полосы
+		var avgCentersBrightness = getAvgCenterBrightness(blured, centers);
+		avgCentersBrightness =
+			Math.round(avgCentersBrightness) +
+			conf.edgeThresholdCorrection;
+
+		var bluredConf={};
+		for(var prop in conf){
+			bluredConf[prop]=conf[prop];
+		}
+		bluredConf.brights=[avgCentersBrightness];
+		var peakEndsBluredU = findPeakEnds(blured, centers, normalsU, bluredConf);
+		var peakEndsBluredD = findPeakEnds(blured, centers, normalsD, bluredConf);
+
+		var edgeU = smoothArray(peakEndsBluredU[0].map((e)=>e[2]), conf.edgeDelta);
+		var edgeD = smoothArray(peakEndsBluredD[0].map((e)=>e[2]), conf.edgeDelta);
+
+		// }} Подсчёт полосы
+
 	}
+
+
+
+
 
 	var timeBeforePeaksU = Date.now();
 	var peakEndsU = findPeakEnds(image, centers, normalsU, conf);
@@ -92,41 +137,30 @@ function processMainImage(image){
 	var peakEndsD = findPeakEnds(image, centers, normalsD, conf);
 	console.log("Поиск  нижних пиков: " + (Date.now() - timeBeforePeaksD)/1000 + " с");
 
-	// {{ Подсчёт полосы
-	var avgCentersBrightness = getAvgCenterBrightness(blured, centers);
-	avgCentersBrightness =
-		Math.round(avgCentersBrightness) +
-		conf.edgeThresholdCorrection;
 
-	var bluredConf={};
-	for(var prop in conf){
-		bluredConf[prop]=conf[prop];
+	if(!circular){
+		var centered = markArray(image, centers, 0x00ff00ff);
+		console.log('Центры отмечены');
+	}else{
+		var centered = markBiArray(image, centers, 0x00ff00ff);
 	}
-	bluredConf.brights=[avgCentersBrightness];
-	var peakEndsBluredU = findPeakEnds(blured, centers, normalsU, bluredConf);
-	var peakEndsBluredD = findPeakEnds(blured, centers, normalsD, bluredConf);
-
-	var edgeU = smoothArray(peakEndsBluredU[0].map((e)=>e[2]), conf.edgeDelta);
-	var edgeD = smoothArray(peakEndsBluredD[0].map((e)=>e[2]), conf.edgeDelta);
-
-	// }} Подсчёт полосы
+	
 
 
+	var edged = centered;
+	if(!centered){//TODO: таки сделать
+		var edged = markBiArray(
+			centered.clone(),
+			makeNormalArray(edgeU,centers,normalsU,conf),
+			0xff69b4ff
+		);
 
-	var centered = markArray(image, centers, 0x00ff00ff);
-
-
-	var edged = markBiArray(
-		centered.clone(),
-		makeNormalArray(edgeU,centers,normalsU,conf),
-		0xff69b4ff
-	);
-
-	edged = markBiArray(
-		edged,
-		makeNormalArray(edgeD,centers,normalsD,conf),
-		0xff69b4ff
-	);
+		edged = markBiArray(
+			edged,
+			makeNormalArray(edgeD,centers,normalsD,conf),
+			0xff69b4ff
+		);
+	}
 
 	for (var $j = 0; $j < conf.brights.length; $j++) {
 		(function(j){
@@ -139,36 +173,36 @@ function processMainImage(image){
 			wr.writeDataArray(lengthsUp  , conf,   "up_"+ conf.brights[j]);
 			wr.writeDataArray(lengthsDown, conf, "down_"+ conf.brights[j]);
 
+			if(!circular){
+				var edgeUp   = decreaseArr(lengthsUp  , edgeU);
+				var edgeDown = decreaseArr(lengthsDown, edgeD);
 
-			var edgeUp   = decreaseArr(lengthsUp  , edgeU);
-			var edgeDown = decreaseArr(lengthsDown, edgeD);
+				wr.writeDataArray(edgeUp  , conf,   "up_min-normed_"+ conf.brights[j]);
+				wr.writeDataArray(edgeDown, conf, "down_min-normed_"+ conf.brights[j]);
 
-			wr.writeDataArray(edgeUp  , conf,   "up_min-normed_"+ conf.brights[j]);
-			wr.writeDataArray(edgeDown, conf, "down_min-normed_"+ conf.brights[j]);
+				//wr.writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
 
+				var smoothedEndsU = makeSmoothArray(peakEndsU[j],centers,normalsU,conf);
+				var smoothedEndsD = makeSmoothArray(peakEndsD[j],centers,normalsD,conf);
 
-			wr.writeDataArray(peakEndsU.brightnessSlice[j], conf,   "up_slice_"+ conf.brights[j]);
+				var smoothed = markBiArray(
+					centered.clone(),
+					smoothedEndsU,
+					0xff00ffff
+				);
 
-			var smoothedEndsU = makeSmoothArray(peakEndsU[j],centers,normalsU,conf);
-			var smoothedEndsD = makeSmoothArray(peakEndsD[j],centers,normalsD,conf);
+				smoothed = markBiArray(
+					smoothed,
+					smoothedEndsD,
+					0xffff00ff
+				);
 
-			var smoothed = markBiArray(
-				centered.clone(),
-				smoothedEndsU,
-				0xff00ffff
-			);
+				wr.writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
+				wr.writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
 
-			smoothed = markBiArray(
-				smoothed,
-				smoothedEndsD,
-				0xffff00ff
-			);
-
-			wr.writeDataArray(getLocMaxs(smoothedEndsU.map((e)=>e[2])), conf,   "up_locmaxs_dist_"+ conf.brights[j]);
-			wr.writeDataArray(getLocMaxs(smoothedEndsD.map((e)=>e[2])), conf, "down_locmaxs_dist_"+ conf.brights[j]);
-
+				wr.writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
+			}
 			wr.writeImage(  peaked, conf,   "peaked_" + conf.brights[j]);
-			wr.writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
 		})($j);
 	}
 	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + " с");
@@ -252,6 +286,18 @@ function makeNormals(centers, normalsU, normalsD, par){
 	}
 }
 
+function makeCircNormals(conf){
+	var step = 2*Math.PI/conf.angleStep;
+	var normals = [];
+
+	for(var i = 0; i < conf.angleStep; i++) {
+		normals.push([
+			Math.cos(step * i),
+			Math.sin(step * i),
+		]);
+	}
+	return normals;
+}
 
 function getBrightnessCenters(image) {
 	var centers = [];
@@ -291,11 +337,18 @@ function findPeakEnds(image, points, normals, par) {
 		format: 'Поиск иголок [{bar}] {percentage}% | ETA: {eta}s',
 		hideCursor: true
 	});
-	bar.start(image.bitmap.width, 0);
+	
+	var arrlen = Math.min(points.length, normals.length);
+	
+	//arrlen = points.length;
+	
+	console.log(arrlen);
+	
+	bar.start(arrlen, 0);
 
-	var barstep = Math.ceil(image.bitmap.width/200);
+	var barstep = Math.ceil(arrlen/200);
 
-	if(points[0][1] === undefined) {
+	if(points[0] && (points[0][1] === undefined)) {
 		points = points.map((p,i)=>[i,p]);
 	}
 
@@ -310,7 +363,7 @@ function findPeakEnds(image, points, normals, par) {
 	for (var j = 0; j < par.brights.length; j++){
 		ends.push([]);
 	}
-	for (var i = 0; i < image.bitmap.width; i++) {
+	for (var i = 0; i < arrlen; i++) {
 		var curx = points[i][0];
 		var cury = points[i][1];
 		var len = 0;
@@ -346,11 +399,12 @@ function findPeakEnds(image, points, normals, par) {
 		if(i%barstep==0){
 			bar.update(i);
 		}
+		//console.log(i, points[i]);
 	}
 	for(var j = 0; j < par.brights.length; j++) {
 		// Считаем среднюю длину иголки для заданной яркости
 		var avg = 0;
-		for(var i = 0; i < image.bitmap.width; i++) {
+		for(var i = 0; i < arrlen; i++) {
 			avg +=ends[j][2];
 		}
 		avg /= image.bitmap.width;
@@ -358,7 +412,7 @@ function findPeakEnds(image, points, normals, par) {
 		avg  = Math.round(avg);
 
 		ends.brightnessSlice[j] = [];
-		for(var i = 0; i < image.bitmap.width; i++) {
+		for(var i = 0; i < arrlen; i++) {
 			ends.brightnessSlice[j][i] = 1*!!(
 				ends.brightnessTable[i][j] >= par.brights[j]
 			);
@@ -366,7 +420,7 @@ function findPeakEnds(image, points, normals, par) {
 	}
 
 
-	bar.update(image.bitmap.width);
+	bar.update(arrlen);
 	bar.stop();
 	return ends;
 }
@@ -451,5 +505,8 @@ console.log(normLocMins([1,1,1,3,-1,1,1,1,5,5,5,5,7],2));
 */
 
 function decreaseArr(arr, dec){
+	if(!arr.length){
+		return [];
+	}
 	return arr.map((elem,i)=>(elem - dec[i]));
 }
