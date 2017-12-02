@@ -141,7 +141,7 @@ function processMainImage(image){
 
 
 	if(!circular){
-		var centered = markArray(image, centers, 0x00ff00ff);
+		var centered = markBiArray(image, centers, 0x00ff00ff);
 		console.log('Центры отмечены');
 	}else{
 		var centered = markBiArray(image, centers, 0x00ff00ff);
@@ -162,6 +162,7 @@ function processMainImage(image){
 			makeNormalArray(edgeD,centers,normalsD,conf),
 			0xff69b4ff
 		);
+		console.log('Полоса распознана');
 	}
 
 	for (var $j = 0; $j < conf.brights.length; $j++) {
@@ -237,6 +238,8 @@ function getLinearCenters(blured, conf){
 	}
 	// Пишем центры в кэш
 	wr.writeDataArray(centers, conf, "__centers.cache");
+	
+	centers = centers.map((e,i) => [i,e]);
 	return centers;
 }
 
@@ -251,8 +254,8 @@ function makeSmoothArray(peakEnds, centers, normals, conf){
 function makeNormalArray(peakEndsSmoothedLength, centers, normals, conf){
 	var peakEndsSmoothed = [];
 	for (var i = 0; i < normals.length; i++) {
-		var x = i          + normals[i][0]*peakEndsSmoothedLength[i];
-		var y = centers[i] + normals[i][1]*peakEndsSmoothedLength[i];
+		var x = centers[i][0] + normals[i][0]*peakEndsSmoothedLength[i];
+		var y = centers[i][1] + normals[i][1]*peakEndsSmoothedLength[i];
 		peakEndsSmoothed.push([x,y,peakEndsSmoothedLength[i]]);
 	}
 	return peakEndsSmoothed;
@@ -272,8 +275,8 @@ function makeNormals(centers, normalsU, normalsD, par){
 	for(var i = 0; i < centers.length; i++) {
 		var xs = [], ys = [];
 		for(var j = Math.max(0, i - delta); j < Math.min(centers.length, i + delta); j++) {
-			xs.push(j);
-			ys.push(centers[j]);
+			xs.push(centers[j][0]);
+			ys.push(centers[j][1]);
 		}
 		var k = linearRegression(xs, ys).slope;
 		if (k < 0) {
