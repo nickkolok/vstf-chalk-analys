@@ -140,13 +140,8 @@ function processMainImage(image){
 	console.log("Поиск  нижних пиков: " + (Date.now() - timeBeforePeaksD)/1000 + " с");
 
 
-	if(!circular){
-		var centered = markBiArray(image, centers, 0x00ff00ff);
-		console.log('Центры отмечены');
-	}else{
-		var centered = markBiArray(image, centers, 0x00ff00ff);
-	}
-	
+	var centered = markBiArray(image, centers, 0x00ff00ff);
+	console.log('Центры отмечены');
 
 
 	var edged = centered;
