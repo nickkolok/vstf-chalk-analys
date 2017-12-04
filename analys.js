@@ -168,15 +168,15 @@ function processMainImage(image){
 			var lengthsUp   = peakEndsU[j].map((e)=>e[2]);
 			var lengthsDown = peakEndsD[j].map((e)=>e[2]);
 
-			//wr.writeDataArray(lengthsUp  , conf,   "up_"+ conf.brights[j]);
-			//wr.writeDataArray(lengthsDown, conf, "down_"+ conf.brights[j]);
+			wr.writeDataArray(lengthsUp  , conf,   "up_"+ conf.brights[j]);
+			wr.writeDataArray(lengthsDown, conf, "down_"+ conf.brights[j]);
 
 			if(!circular){
 				var edgeUp   = decreaseArr(lengthsUp  , edgeU);
 				var edgeDown = decreaseArr(lengthsDown, edgeD);
 
-				//wr.writeDataArray(edgeUp  , conf,   "up_min-normed_"+ conf.brights[j]);
-				//wr.writeDataArray(edgeDown, conf, "down_min-normed_"+ conf.brights[j]);
+				wr.writeDataArray(edgeUp  , conf,   "up_min-normed_"+ conf.brights[j]);
+				wr.writeDataArray(edgeDown, conf, "down_min-normed_"+ conf.brights[j]);
 
 
 				var smoothedEndsU = makeSmoothArray(peakEndsU[j],centers,normalsU,conf);
@@ -198,17 +198,17 @@ function processMainImage(image){
 				locMaxsEndsU.splice(                 0, conf.borderRadius);
 				locMaxsEndsU.splice(-conf.borderRadius, conf.borderRadius);
 				locMaxsEndsU = getLocMaxs(locMaxsEndsU);
-				//wr.writeDataArray(locMaxsEndsU, conf,   "up_locmaxs_dist_"+ conf.brights[j]);
+				wr.writeDataArray(locMaxsEndsU, conf,   "up_locmaxs_dist_"+ conf.brights[j]);
 				
 				var locMaxsEndsD = smoothedEndsD.map((e)=>e[2]);
 				locMaxsEndsD.splice(                 0, conf.borderRadius);
 				locMaxsEndsD.splice(-conf.borderRadius, conf.borderRadius);
 				locMaxsEndsD = getLocMaxs(locMaxsEndsD);
-				//wr.writeDataArray(locMaxsEndsD, conf, "down_locmaxs_dist_"+ conf.brights[j]);
+				wr.writeDataArray(locMaxsEndsD, conf, "down_locmaxs_dist_"+ conf.brights[j]);
 
-				//console.log(conf.brights[j],averageInArray(locMaxsEndsU), averageInArray(locMaxsEndsD));
+				console.log(conf.brights[j],averageInArray(locMaxsEndsU), averageInArray(locMaxsEndsD));
 
-				//wr.writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
+				wr.writeImage(smoothed, conf, "smoothed_" + conf.brights[j]);
 
 
 				var layerU = peakEndsU.brightnessSlice[j];
@@ -224,13 +224,13 @@ function processMainImage(image){
 
 
 
-				console.log(conf.brights[j],averageInArray(layerU)/conf.scaleFactor);
+				//console.log(conf.brights[j],averageInArray(layerU)/conf.scaleFactor);
 
 				wr.writeDataArray(layerU, conf,   "up_slice_locmax-dist"+ conf.brights[j]);
 
 
 			}
-			//wr.writeImage(  peaked, conf,   "peaked_" + conf.brights[j]);
+			wr.writeImage(  peaked, conf,   "peaked_" + conf.brights[j]);
 		})($j);
 	}
 	console.log("Итого: " + (Date.now() - timeBeforeGauss)/1000 + " с");
