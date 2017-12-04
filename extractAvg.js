@@ -1,10 +1,16 @@
 var fs = require('fs');
 
-var arr = fs.readFileSync(process.argv[2], 'utf-8').split(/\r\n/).map((el)=>(1*el));
+var arr = [];
+
+
+var files = process.argv.slice(2);
+
+for(var j = 0; j < files.length; j++){
+	arr = arr.concat(fs.readFileSync(process.argv[2], 'utf-8').split(/\r\n/).map((el)=>(1*el)));
+}
 //console.log(arr);
 
 
-//console.log(averageInArray(arr));
 
 var lm = [];
 for(var i = 1; i < arr.length; i++) {
@@ -13,7 +19,9 @@ for(var i = 1; i < arr.length; i++) {
 	}
 }
 
-console.log(averageInArray(lm));
+console.log(averageInArray(arr));
+
+//console.log(averageInArray(lm));
 
 function isLocMax(arr, i){
 	if(arr[i] > arr[i-1]){
