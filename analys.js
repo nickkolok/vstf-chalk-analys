@@ -478,7 +478,10 @@ function smoothArray(ends, delta){
 
 
 function getAverageIfThereIs(arr, index, retro){
-	var avg = arr[index];
+	if(index < 0){
+		return 0;
+	}
+	var avg = arr[index] || 0;
 	var begin = Math.max(0, index - retro + 1);
 	var count = index - begin;
 	for(var i = begin; i < index; i++) {
