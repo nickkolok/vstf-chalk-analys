@@ -410,14 +410,21 @@ function findPeakEnds(image, points, normals, par) {
 				curx += normals[i][0];
 				cury += normals[i][1];
 				len++;
-			} while(
-				// curBrightness >= conf.brights[j]
-				getAverageIfThereIs(
+				var avgBr = getAverageIfThereIs(
 					ends.brightnessTable[i],
 					ends.brightnessTable[i].length - 1,
 					par.inpeakAvgCoeff
-				) >= brights[j]
-			&&
+				);
+			} while(
+				// curBrightness >= conf.brights[j]
+				avgBr >= brights[j]
+			/*&&
+				avgBr >= 0* 0.8 * getAverageIfThereIs(
+					ends.brightnessTable[i],
+					ends.brightnessTable[i].length - 1 - 8,
+					par.inpeakAvgCoeff
+				)
+			*/&&
 				image.areCoordsInside(curx,cury)
 			);
 			var curpeak = [
