@@ -57,7 +57,7 @@ function processMainImage(image){
 	console.log('Scaling finished.');
 
 	wr.writeConfig(conf);
-	
+
 	conf.gaussRadius *= conf.scaleFactor;
 
 
@@ -140,7 +140,7 @@ function processMainImage(image){
 	console.log("Поиск  нижних пиков: " + (Date.now() - timeBeforePeaksD)/1000 + " с");
 
 
-	var centered = markBiArray(image, centers, 0x00ff00ff);
+	var centered = markBiArray(image, centers, 0x00ff00ff, conf);
 	console.log('Центры отмечены');
 
 
@@ -149,21 +149,23 @@ function processMainImage(image){
 		var edged = markBiArray(
 			centered.clone(),
 			makeNormalArray(edgeU,centers,normalsU,conf),
-			0xff69b4ff
+			0xff69b4ff,
+			conf
 		);
 
 		edged = markBiArray(
 			edged,
 			makeNormalArray(edgeD,centers,normalsD,conf),
-			0xff69b4ff
+			0xff69b4ff,
+			conf
 		);
 		console.log('Полоса распознана');
 	}
 
 	for (var $j = 0; $j < conf.brights.length; $j++) {
 		(function(j){
-			var peaked = markBiArray(edged.clone(), peakEndsU[j], 0xff0000ff);
-			peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff);
+			var peaked = markBiArray(edged.clone(), peakEndsU[j], 0xff0000ff, conf);
+			peaked = markBiArray(peaked, peakEndsD[j], 0x0000ffff, conf);
 
 			var lengthsUp   = peakEndsU[j].map((e)=>e[2]);
 			var lengthsDown = peakEndsD[j].map((e)=>e[2]);
@@ -185,13 +187,15 @@ function processMainImage(image){
 				var smoothed = markBiArray(
 					centered.clone(),
 					smoothedEndsU,
-					0xff00ffff
+					0xff00ffff,
+					conf
 				);
 
 				smoothed = markBiArray(
 					smoothed,
 					smoothedEndsD,
-					0xffff00ff
+					0xffff00ff,
+					conf
 				);
 
 				var locMaxsEndsU = smoothedEndsU.map((e)=>e[2]);
@@ -199,7 +203,7 @@ function processMainImage(image){
 				locMaxsEndsU.splice(-conf.borderRadius, conf.borderRadius);
 				locMaxsEndsU = getLocMaxs(locMaxsEndsU);
 				wr.writeDataArray(locMaxsEndsU, conf,   "up_locmaxs_dist_"+ conf.brights[j]);
-				
+
 				var locMaxsEndsD = smoothedEndsD.map((e)=>e[2]);
 				locMaxsEndsD.splice(                 0, conf.borderRadius);
 				locMaxsEndsD.splice(-conf.borderRadius, conf.borderRadius);
@@ -220,7 +224,7 @@ function processMainImage(image){
 				layerU.sort((a,b)=>a-b);
 				//console.log(layerU.join(';  '));
 
-				//var sliceLevel = 
+				//var sliceLevel =
 
 
 
@@ -263,7 +267,7 @@ function getLinearCenters(blured, conf){
 	}
 	// Пишем центры в кэш
 	wr.writeDataArray(centers, conf, "__centers.cache");
-	
+
 	centers = centers.map((e,i) => [i,e]);
 	return centers;
 }
@@ -346,8 +350,14 @@ function markArray(image, array, intcolor) {
 	return marked;
 }
 
-function markBiArray(image, array, intcolor) {
-	return image.markPoints(array, intcolor);
+function markBiArray(image, array, intcolor, conf) {
+
+	for (var i = -conf.markerWidth; i < conf.markerWidth; i++){
+		for (var j = -conf.markerWidth; j < conf.markerWidth; j++){
+			image.markPoints(array.map((coord)=>([coord[0]+i,coord[1]+j])), intcolor);
+		}
+	}
+	return image;
 }
 
 function getAvgCenterBrightness(image, centers) {
@@ -367,13 +377,13 @@ function findPeakEnds(image, points, normals, par) {
 		format: 'Поиск иголок [{bar}] {percentage}% | ETA: {eta}s',
 		hideCursor: true
 	});
-	
+
 	var arrlen = Math.min(points.length, normals.length);
-	
+
 	//arrlen = points.length;
-	
+
 	console.log(arrlen);
-	
+
 	bar.start(arrlen, 0);
 
 	var barstep = Math.ceil(arrlen/200);
@@ -391,8 +401,8 @@ function findPeakEnds(image, points, normals, par) {
 	var ends = [];
 	ends.brightnessTable = [];
 	ends.brightnessSlice = [];
-	
-	
+
+
 	for (var j = 0; j < brights.length; j++){
 		ends.push([]);
 	}
